@@ -58,7 +58,7 @@ export default function Button({
     >
       {loading ? (
         <ActivityIndicator
-          color={variant === "outline" ? "#3B82F6" : "white"}
+          color={variant === "outline" ? "#16A34A" : "white"}
         />
       ) : (
         <Text

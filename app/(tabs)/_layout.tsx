@@ -6,26 +6,25 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: "#21c43f",
-        tabBarInactiveTintColor: "#70ba76",
+        tabBarActiveTintColor: "#3B82F6",
+        tabBarInactiveTintColor: "#9CA3AF",
         tabBarStyle: {
-          paddingBottom: 5,
-          paddingTop: 5,
+          backgroundColor: "white",
+          borderTopWidth: 1,
+          borderTopColor: "#E5E7EB",
           height: 60,
+          paddingBottom: 8,
+          paddingTop: 8,
         },
-        tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: "500",
-        },
+        headerShown: false,
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
           title: "Home",
-          headerShown: false,
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home" size={size} color={color} />
+            <Ionicons name="home-outline" size={size} color={color} />
           ),
         }}
       />
@@ -34,9 +33,8 @@ export default function TabsLayout() {
         name="browse"
         options={{
           title: "Browse",
-          headerShown: false,
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="search" size={size} color={color} />
+            <Ionicons name="search-outline" size={size} color={color} />
           ),
         }}
       />
@@ -44,10 +42,24 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="add-item"
         options={{
-          title: "Add Item",
-          headerShown: false,
-          tabBarIcon: ({ color, size }) => (
-            <View className="bg-primary -top-5 w-14 h-14 rounded-full items-center justify-center">
+          title: "",
+          tabBarIcon: ({ color, size, focused }) => (
+            <View
+              style={{
+                backgroundColor: "#10B981", // Green color
+                width: 46,
+                height: 46,
+                borderRadius: 28,
+                justifyContent: "center",
+                alignItems: "center",
+                marginBottom: 0, // This lifts the icon above the tab bar
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.25,
+                shadowRadius: 3.84,
+                elevation: 5,
+              }}
+            >
               <Ionicons name="add" size={30} color="white" />
             </View>
           ),
@@ -58,9 +70,8 @@ export default function TabsLayout() {
         name="profile"
         options={{
           title: "Profile",
-          headerShown: false,
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person" size={size} color={color} />
+            <Ionicons name="person-outline" size={size} color={color} />
           ),
         }}
       />
