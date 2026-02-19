@@ -1,3 +1,5 @@
+import BuyCreditsScreen from "@/components/cards/BuyCreditsScreen";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useEffect } from "react";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
@@ -16,186 +18,165 @@ export default function HomeScreen() {
     fetchProducts();
   }, []);
 
-  const featuredProducts = products.slice(0, 5);
+  const featuredProducts = products.slice(0, 6);
 
   if (isLoading) {
     return <LoadingSpinner fullScreen />;
   }
 
   return (
-    <ScrollView className="flex-1 bg-gray-50">
-      {/* Hero Section with Logo */}
-      <View className="px-4 pt-2 pb-2">
-        <View className="items-center mb-4">
-          <Image
-            source={require("../../assets/images/brittoo-logo.png")}
-            className="w-40 h-40 mb-0"
-            resizeMode="contain"
-          />
-
-          <Text className="text-green-700 text-center text-lg">
-            Rent what you need, when you need it
-          </Text>
-        </View>
-
-        {/* Search Bar */}
-        <TouchableOpacity
-          onPress={() => router.push("/(tabs)/browse")}
-          className="bg-green-400 backdrop-blur-lg rounded-full px-4 py-3 flex-row items-center mt-2"
+    <ScrollView
+      className="flex-1 bg-white"
+      showsVerticalScrollIndicator={false}
+    >
+      {/* Header & Hero Section */}
+      <View className="pb-10">
+        <LinearGradient
+          colors={["#f0fdf4", "#ffffff"]}
+          className="px-6 pt-12 pb-8 rounded-b-[40px]"
         >
-          <Text className="text-white text-lg mr-2">🔍</Text>
-          <Text className="text-white/80 flex-1">
-            Search for items to rent...
-          </Text>
-        </TouchableOpacity>
+          {/* Top Bar */}
+          <View className="flex-row justify-between items-center mb-8">
+            <View>
+              <Text className="text-gray-500 text-sm font-medium">
+                Welcome to
+              </Text>
+              <Text className="text-3xl font-bold text-green-900 tracking-tight">
+                Brittoo<Text className="text-green-500">.</Text>
+              </Text>
+            </View>
+            <TouchableOpacity className="bg-white p-2 rounded-full shadow-sm border border-gray-100">
+              <Text className="text-xl">🔔</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Hero Branding Card */}
+          <View className="bg-green-400 rounded-3xl p-6 flex-row items-center justify-between shadow-xl shadow-green-200">
+            <View className="flex-1 pr-4">
+              <Text className="text-white text-2xl font-bold leading-8">
+                Rent anything,{"\n"}anytime.
+              </Text>
+              <Text className="text-green-100 mt-2 text-sm">
+                Save money and reduce waste by renting local.
+              </Text>
+            </View>
+            <View className="bg-white/40 p-2 rounded-2xl">
+              <Image
+                source={require("../../assets/images/brittoo-logo.png")}
+                className="w-16 h-16"
+                resizeMode="contain"
+              />
+            </View>
+          </View>
+
+          {/* Floating Search Bar */}
+          <TouchableOpacity
+            onPress={() => router.push("/(tabs)/browse")}
+            activeOpacity={0.9}
+            className="bg-white rounded-2xl px-5 py-4 flex-row items-center mt-6 shadow-lg shadow-gray-200 border border-gray-50"
+          >
+            <Text className="text-green-600 mr-3 text-lg">🔍</Text>
+            <Text className="text-gray-400 flex-1 font-medium">
+              Search cameras, tools, camping gear...
+            </Text>
+            <View className="bg-green-50 px-2 py-1 rounded-md">
+              <Text className="text-green-700 text-[10px] font-bold">PRO</Text>
+            </View>
+          </TouchableOpacity>
+        </LinearGradient>
       </View>
 
-      {/* Stats Section */}
-
-      {/* Categories */}
-      <View className="bg-white mt-4 p-4">
-        <View className="flex-row justify-between items-center mb-4">
-          <Text className="text-lg font-semibold">Popular Categories</Text>
+      {/* Categories Section */}
+      <View className="px-6 mb-8">
+        <View className="flex-row justify-between items-end mb-4">
+          <View>
+            <Text className="text-xl font-bold text-gray-900">Categories</Text>
+            <Text className="text-gray-500 text-xs">
+              What are you looking for?
+            </Text>
+          </View>
           <TouchableOpacity onPress={() => router.push("/(tabs)/browse")}>
-            <Text className="text-green-600">See All →</Text>
+            <Text className="text-green-600 font-semibold">View All</Text>
           </TouchableOpacity>
         </View>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          className="-mx-2"
+        >
           {categories.map((category) => (
-            <CategoryCard
-              key={category.id}
-              name={category.name}
-              icon={category.icon}
-              color={category.color}
-              selected={false}
-              onPress={() => {
-                filterByCategory(category.name);
-                router.push("/(tabs)/browse");
-              }}
-            />
+            <View key={category.id} className="px-2">
+              <CategoryCard
+                name={category.name}
+                icon={category.icon}
+                color={category.color}
+                selected={false}
+                onPress={() => {
+                  filterByCategory(category.name);
+                  router.push("/(tabs)/browse");
+                }}
+              />
+            </View>
           ))}
         </ScrollView>
       </View>
 
-      {/* Featured Products */}
-      <View className="bg-white mt-4 p-4">
-        <View className="flex-row justify-between items-center mb-4">
+      {/* Featured Grid */}
+      <View className="px-6 mb-8">
+        <View className="flex-row justify-between items-end mb-4">
           <View>
-            <Text className="text-lg font-semibold">Featured Items</Text>
-            <Text className="text-gray-500 text-sm">
-              Popular rentals this week
+            <Text className="text-xl font-bold text-gray-900">
+              Trending Now
+            </Text>
+            <Text className="text-gray-500 text-xs">
+              Top picks from the community
             </Text>
           </View>
           <TouchableOpacity onPress={() => router.push("/(tabs)/browse")}>
-            <Text className="text-green-600">See All →</Text>
+            <Text className="text-green-600 font-semibold">See All</Text>
           </TouchableOpacity>
         </View>
 
-        {featuredProducts.map((product) => (
-          <ProductCard
-            key={product.id}
-            product={product}
-            onPress={() => router.push(`/product/${product.id}`)}
-          />
-        ))}
+        <View className="flex-row flex-wrap justify-between">
+          {featuredProducts.map((product) => (
+            <View key={product.id} className="w-[48%] mb-4">
+              <ProductCard
+                product={product}
+                onPress={() => router.push(`/product/${product.id}`)}
+              />
+            </View>
+          ))}
+        </View>
       </View>
 
-      {/* Why Choose Us */}
-      <View className="bg-green-50 mt-4 p-6">
-        <Text className="text-lg font-semibold text-center mb-6">
-          Why Choose Brittoo?
+      {/* Trust & Features Section */}
+      <View className="bg-gray-50 py-10 px-6">
+        <Text className="text-center text-gray-400 font-bold tracking-widest uppercase text-xs mb-8">
+          The Brittoo Advantage
         </Text>
         <View className="flex-row flex-wrap justify-between">
-          <View className="w-[48%] bg-white p-4 rounded-xl mb-3">
-            <Text className="text-3xl mb-2">💰</Text>
-            <Text className="font-semibold mb-1">Save Money</Text>
-            <Text className="text-xs text-gray-600">Rent instead of buy</Text>
-          </View>
-          <View className="w-[48%] bg-white p-4 rounded-xl mb-3">
-            <Text className="text-3xl mb-2">🌱</Text>
-            <Text className="font-semibold mb-1">Eco-Friendly</Text>
-            <Text className="text-xs text-gray-600">Reduce waste</Text>
-          </View>
-          <View className="w-[48%] bg-white p-4 rounded-xl">
-            <Text className="text-3xl mb-2">🛡️</Text>
-            <Text className="font-semibold mb-1">Secure</Text>
-            <Text className="text-xs text-gray-600">Verified users</Text>
-          </View>
-          <View className="w-[48%] bg-white p-4 rounded-xl">
-            <Text className="text-3xl mb-2">⚡</Text>
-            <Text className="font-semibold mb-1">Quick & Easy</Text>
-            <Text className="text-xs text-gray-600">Simple booking</Text>
-          </View>
+          {[
+            { icon: "💰", title: "Save Money", desc: "Up to 80% cheaper" },
+            { icon: "🛡️", title: "Secure", desc: "Verified users" },
+            { icon: "🌱", title: "Eco-Friendly", desc: "Sustainable living" },
+            { icon: "⚡", title: "Quick", desc: "Instant booking" },
+          ].map((item, index) => (
+            <View
+              key={index}
+              className="w-[48%] bg-white p-5 rounded-3xl mb-4 border border-gray-100 shadow-sm"
+            >
+              <Text className="text-2xl mb-2">{item.icon}</Text>
+              <Text className="font-bold text-gray-900">{item.title}</Text>
+              <Text className="text-[10px] text-gray-500 mt-1 uppercase tracking-tighter">
+                {item.desc}
+              </Text>
+            </View>
+          ))}
         </View>
       </View>
 
-      {/* How It Works */}
-      <View className="bg-white mt-4 p-6">
-        <Text className="text-lg font-semibold text-center mb-6">
-          How It Works
-        </Text>
-        <View className="flex-row justify-around">
-          <View className="items-center flex-1">
-            <View className="bg-green-100 w-12 h-12 rounded-full items-center justify-center mb-2">
-              <Text className="text-2xl">🔍</Text>
-            </View>
-            <Text className="text-sm font-medium">Find</Text>
-            <Text className="text-xs text-gray-500 text-center px-2">
-              Search for items near you
-            </Text>
-          </View>
-          <View className="items-center flex-1">
-            <View className="bg-green-100 w-12 h-12 rounded-full items-center justify-center mb-2">
-              <Text className="text-2xl">📅</Text>
-            </View>
-            <Text className="text-sm font-medium">Book</Text>
-            <Text className="text-xs text-gray-500 text-center px-2">
-              Choose your dates
-            </Text>
-          </View>
-          <View className="items-center flex-1">
-            <View className="bg-green-100 w-12 h-12 rounded-full items-center justify-center mb-2">
-              <Text className="text-2xl">🔑</Text>
-            </View>
-            <Text className="text-sm font-medium">Pickup</Text>
-            <Text className="text-xs text-gray-500 text-center px-2">
-              Meet & get your item
-            </Text>
-          </View>
-        </View>
-      </View>
-
-      {/* CTA Section */}
-      <View className="bg-green-600 mt-4 p-8 items-center">
-        <Text className="text-2xl font-bold text-white text-center mb-2">
-          Got something to rent?
-        </Text>
-        <Text className="text-green-100 text-center mb-4">
-          Join our community and earn money from your idle items
-        </Text>
-        <TouchableOpacity
-          onPress={() => router.push("/(tabs)/add-item")}
-          className="bg-white px-8 py-3 rounded-full"
-        >
-          <Text className="text-green-600 font-semibold">Start Earning →</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Footer */}
-      <View className="p-6 items-center">
-        <Image
-          source={require("../../assets/images/brittoo-logo.png")}
-          className="w-12 h-12 mb-2"
-          resizeMode="contain"
-        />
-
-        <Text className="text-gray-800 text-xs text-center">
-          Rent what you need, when you need it
-        </Text>
-        <Text className="text-gray-700 text-xs mt-4">
-          © 2024 Brittoo. All rights reserved.
-        </Text>
-      </View>
+      {/* Modern CTA Card */}
+      <BuyCreditsScreen />
     </ScrollView>
   );
 }

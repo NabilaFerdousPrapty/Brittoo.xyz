@@ -1,17 +1,19 @@
+import { useAuthStore } from "@/store/useAuthStore";
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import { View } from "react-native";
 
 export default function TabsLayout() {
+  const { isAuthenticated } = useAuthStore();
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: "#3B82F6",
-        tabBarInactiveTintColor: "#9CA3AF",
+        tabBarActiveTintColor: "#22c55e",
+        tabBarInactiveTintColor: "#6b7280",
         tabBarStyle: {
           backgroundColor: "white",
           borderTopWidth: 1,
-          borderTopColor: "#E5E7EB",
+          borderTopColor: "#e5e7eb",
           height: 60,
           paddingBottom: 8,
           paddingTop: 8,
