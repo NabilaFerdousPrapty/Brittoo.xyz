@@ -1,57 +1,43 @@
-# ----------------------
-# Global dependencies
-# ----------------------
+# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+
+# dependencies
 node_modules/
-**/node_modules/
 
-# ----------------------
-# Build outputs
-# ----------------------
-build/
+# Expo
+.expo/
 dist/
-**/build/
-**/dist/
+web-build/
+expo-env.d.ts
 
-# ----------------------
-# Environment variables
-# ----------------------
-.env
-.env.*
-**/.env
-**/.env.*
+# Native
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
 
-# ----------------------
-# Logs
-# ----------------------
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-logs/
-*.log
+# Metro
+.metro-health-check*
 
-# ----------------------
-# Prisma
-# ----------------------
-prisma/dev.db
-prisma/dev.db-journal
-prisma/migrations/
-**/prisma/dev.db
-**/prisma/migrations/
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
 
-# ----------------------
-# OS-specific
-# ----------------------
+# macOS
 .DS_Store
-Thumbs.db
+*.pem
 
-# ----------------------
-# Editor/IDE
-# ----------------------
-.vscode/
-.idea/
-*.swp
+# local env files
+.env*.local
 
-# ----------------------
-# Misc
-# ----------------------
-coverage/
+# typescript
+*.tsbuildinfo
+
+app-example
+
+# generated native folders
+/ios
+/android
