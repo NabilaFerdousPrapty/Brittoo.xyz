@@ -39,7 +39,7 @@ export default function AddItemScreen() {
       setShowAuthModal(true);
     }
 
-    // Request permissions on mount
+    // Request permissions on mount using the modern approach
     (async () => {
       const { status } =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -62,16 +62,33 @@ export default function AddItemScreen() {
     }
   }, [isAuthenticated]);
 
-  const pickImage = async () => {
+  const pickMultipleImages = async () => {
     try {
+      // Check permissions first
+      const { status } = await ImagePicker.getMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        const { status: newStatus } =
+          await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (newStatus !== "granted") {
+          Alert.alert(
+            "Permission Required",
+            "Please grant camera roll permissions to upload images.",
+            [{ text: "OK" }],
+          );
+          return;
+        }
+      }
+
+      const remainingSlots = 5 - images.length;
+
+      // Multiple image selection - NO editing (editing not supported with multiple selection)
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
+        mediaTypes: ["images"],
+        allowsEditing: false, // Must be false when allowsMultipleSelection is true
         quality: 0.8,
         base64: false,
         allowsMultipleSelection: true,
-        selectionLimit: 5 - images.length,
+        selectionLimit: remainingSlots,
       });
 
       if (!result.canceled && result.assets) {
@@ -85,6 +102,49 @@ export default function AddItemScreen() {
         setIsUploading(false);
       }
     } catch (error) {
+      console.error("Error picking images:", error);
+      Alert.alert("Error", "Failed to pick images. Please try again.");
+      setIsUploading(false);
+    }
+  };
+
+  const pickSingleImage = async () => {
+    try {
+      // Check permissions first
+      const { status } = await ImagePicker.getMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        const { status: newStatus } =
+          await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (newStatus !== "granted") {
+          Alert.alert(
+            "Permission Required",
+            "Please grant camera roll permissions to upload images.",
+            [{ text: "OK" }],
+          );
+          return;
+        }
+      }
+
+      // Single image selection with editing enabled
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsEditing: true, // Editing is supported for single selection
+        aspect: [4, 3],
+        quality: 0.8,
+        base64: false,
+        allowsMultipleSelection: false, // Must be false when allowsEditing is true
+      });
+
+      if (!result.canceled && result.assets) {
+        setIsUploading(true);
+
+        // Simulate upload delay (remove this in production)
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        setImages([...images, result.assets[0].uri]);
+        setIsUploading(false);
+      }
+    } catch (error) {
       console.error("Error picking image:", error);
       Alert.alert("Error", "Failed to pick image. Please try again.");
       setIsUploading(false);
@@ -93,15 +153,19 @@ export default function AddItemScreen() {
 
   const takePhoto = async () => {
     try {
-      const { status } = await ImagePicker.requestCameraPermissionsAsync();
-
+      // Check camera permissions
+      const { status } = await ImagePicker.getCameraPermissionsAsync();
       if (status !== "granted") {
-        Alert.alert(
-          "Permission Required",
-          "Sorry, we need camera permissions to take photos!",
-          [{ text: "OK" }],
-        );
-        return;
+        const { status: newStatus } =
+          await ImagePicker.requestCameraPermissionsAsync();
+        if (newStatus !== "granted") {
+          Alert.alert(
+            "Permission Required",
+            "Please grant camera permissions to take photos.",
+            [{ text: "OK" }],
+          );
+          return;
+        }
       }
 
       const result = await ImagePicker.launchCameraAsync({
@@ -128,23 +192,42 @@ export default function AddItemScreen() {
   };
 
   const showImagePickerOptions = () => {
+    const remainingSlots = 5 - images.length;
+
+    // Create options array based on remaining slots
+    const options = [
+      {
+        text: "Take Photo",
+        onPress: takePhoto,
+      },
+    ];
+
+    // Add library options based on remaining slots
+    if (remainingSlots === 1) {
+      options.push({
+        text: "Choose from Library (with editing)",
+        onPress: pickSingleImage,
+      });
+    } else if (remainingSlots > 1) {
+      options.push({
+        text: `Choose Multiple Photos (${remainingSlots} max, no editing)`,
+        onPress: pickMultipleImages,
+      });
+      options.push({
+        text: "Choose Single Photo (with editing)",
+        onPress: pickSingleImage,
+      });
+    }
+
+    options.push({
+      text: "Cancel",
+      style: "cancel",
+    });
+
     Alert.alert(
       "Add Photos",
-      "Choose an option",
-      [
-        {
-          text: "Take Photo",
-          onPress: takePhoto,
-        },
-        {
-          text: "Choose from Library",
-          onPress: pickImage,
-        },
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-      ],
+      `Select an option (${remainingSlots} slot${remainingSlots !== 1 ? "s" : ""} remaining)`,
+      options,
       { cancelable: true },
     );
   };
