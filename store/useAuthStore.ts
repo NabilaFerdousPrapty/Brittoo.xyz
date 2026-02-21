@@ -19,7 +19,6 @@ export const useAuthStore = create<AuthStore>((set) => ({
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      // Mock login - in real app, this would be an API call
       if (email === "prapty@gmail.com" && password === "123456") {
         const user: User = {
           id: "1",
