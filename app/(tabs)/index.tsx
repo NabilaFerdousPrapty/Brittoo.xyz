@@ -1,4 +1,5 @@
 import BuyCreditsScreen from "@/components/cards/BuyCreditsScreen";
+import HowItWorks from "@/components/cards/HowItWorks";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useEffect } from "react";
@@ -174,7 +175,7 @@ export default function HomeScreen() {
           ))}
         </View>
       </View>
-
+      <HowItWorks />
       {/* Modern CTA Card */}
       <BuyCreditsScreen />
     </ScrollView>

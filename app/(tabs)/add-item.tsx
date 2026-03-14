@@ -219,11 +219,6 @@ export default function AddItemScreen() {
       });
     }
 
-    options.push({
-      text: "Cancel",
-      style: "cancel",
-    });
-
     Alert.alert(
       "Add Photos",
       `Select an option (${remainingSlots} slot${remainingSlots !== 1 ? "s" : ""} remaining)`,
