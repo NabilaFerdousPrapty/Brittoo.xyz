@@ -37,12 +37,11 @@ export default function HomeScreen() {
       className="flex-1 bg-white"
       showsVerticalScrollIndicator={false}
     >
-      {/* 1. ARCHITECTURAL HEADER */}
       <View className="pt-14 pb-6 px-6 bg-white">
         <View className="flex-row justify-between items-center">
           <View>
-            <Text className="text-gray-400 text-xs font-bold uppercase tracking-[2px] mb-1">
-              Peer to Peer Rental Marketplace
+            <Text className="text-green-800 text-xs font-bold uppercase  mb-1 text-center">
+              Renting is the new owning
             </Text>
             <View className="flex-row items-center">
               <Image
@@ -63,7 +62,7 @@ export default function HomeScreen() {
               />
             </TouchableOpacity>
             <View className="w-10 h-10 rounded-full bg-green-100 items-center justify-center overflow-hidden border-2 border-green-50">
-              <Text className="text-green-700 font-bold text-xs">User</Text>
+              <Text className="text-green-700 font-bold text-xs p-1">Me</Text>
             </View>
           </View>
         </View>
