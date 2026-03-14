@@ -1,14 +1,23 @@
 import BuyCreditsScreen from "@/components/cards/BuyCreditsScreen";
 import HowItWorks from "@/components/cards/HowItWorks";
+import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useEffect } from "react";
-import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
-import CategoryCard from "../../components/cards/CategoryCard";
+import {
+  Dimensions,
+  Image,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import ProductCard from "../../components/cards/ProductCard";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import { categories } from "../../constants/categories";
 import { useProductStore } from "../../store/useProductStore";
+
+const { width } = Dimensions.get("window");
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -21,126 +30,159 @@ export default function HomeScreen() {
 
   const featuredProducts = products.slice(0, 6);
 
-  if (isLoading) {
-    return <LoadingSpinner fullScreen />;
-  }
+  if (isLoading) return <LoadingSpinner fullScreen />;
 
   return (
     <ScrollView
       className="flex-1 bg-white"
       showsVerticalScrollIndicator={false}
     >
-      {/* Header & Hero Section */}
-      <View className="pb-10">
-        <LinearGradient
-          colors={["#f0fdf4", "#ffffff"]}
-          className="px-6 pt-12 pb-8 rounded-b-[40px]"
-        >
-          {/* Top Bar */}
-          <View className="flex-row justify-between items-center mb-8">
-            <View>
-              <Text className="text-gray-500 text-sm font-medium">
-                Welcome to
-              </Text>
-              <Text className="text-3xl font-bold text-green-900 tracking-tight">
-                Brittoo<Text className="text-green-500">.</Text>
-              </Text>
+      {/* 1. ARCHITECTURAL HEADER */}
+      <View className="pt-14 pb-6 px-6 bg-white">
+        <View className="flex-row justify-between items-center">
+          <View>
+            <Text className="text-gray-400 text-xs font-bold uppercase tracking-[2px] mb-1">
+              Peer to Peer Rental Marketplace
+            </Text>
+            <View className="flex-row items-center">
+              <Image
+                source={require("../../assets/images/brittoo-logo.png")}
+                className="w-16 h-14"
+                resizeMode="contain"
+              />
+              <Text className="text-lg font-bold text-green-600">.</Text>
             </View>
-            <TouchableOpacity className="bg-white p-2 rounded-full shadow-sm border border-gray-100">
-              <Text className="text-xl">🔔</Text>
+          </View>
+
+          <View className="flex-row items-center space-x-3">
+            <TouchableOpacity className="w-10 h-10 items-center justify-center bg-gray-50 rounded-full border border-gray-100">
+              <Ionicons
+                name="notifications-outline"
+                size={20}
+                color="#1f2937"
+              />
+            </TouchableOpacity>
+            <View className="w-10 h-10 rounded-full bg-green-100 items-center justify-center overflow-hidden border-2 border-green-50">
+              <Text className="text-green-700 font-bold text-xs">User</Text>
+            </View>
+          </View>
+        </View>
+      </View>
+
+      {/* 2. SOPHISTICATED HERO SECTION */}
+      <View className="px-6 mb-8">
+        <LinearGradient
+          colors={["#ffffff", "#f0fdf4"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          className="rounded-[32px] p-8 overflow-hidden relative shadow-2xl shadow-gray-400"
+        >
+          {/* Abstract background detail */}
+          <View className="absolute -right-10 -top-10 w-40 h-40 bg-green-500/10 rounded-full" />
+
+          <View className="z-10">
+            <Text className="text-green-600 text-3xl font-semibold leading-tight">
+              Rent. Share. Thrive.
+            </Text>
+            <Text className="text-gray-400 mt-3 text-sm font-medium leading-5 max-w-[200px]">
+              Owning without buying - the smarter way to access gear on demand.
+            </Text>
+
+            <TouchableOpacity
+              className="bg-green-500 self-start px-6 py-3 rounded-xl mt-6 flex-row items-center"
+              onPress={() => router.push("/(tabs)/browse")}
+            >
+              <Text className="text-white font-bold text-sm mr-2">
+                Explore Gear
+              </Text>
+              <Ionicons name="arrow-forward" size={16} color="white" />
             </TouchableOpacity>
           </View>
 
-          {/* Hero Branding Card */}
-          <View className="bg-green-400 rounded-3xl p-6 flex-row items-center justify-between shadow-xl shadow-green-200">
-            <View className="flex-1 pr-4">
-              <Text className="text-white text-2xl font-bold leading-8">
-                Rent anything,{"\n"}anytime.
-              </Text>
-              <Text className="text-green-100 mt-2 text-sm">
-                Save money and reduce waste by renting local.
-              </Text>
-            </View>
-            <View className="bg-white/40 p-2 rounded-2xl">
-              <Image
-                source={require("../../assets/images/brittoo-logo.png")}
-                className="w-16 h-16"
-                resizeMode="contain"
-              />
-            </View>
-          </View>
-
-          {/* Floating Search Bar */}
-          <TouchableOpacity
-            onPress={() => router.push("/(tabs)/browse")}
-            activeOpacity={0.9}
-            className="bg-white rounded-2xl px-5 py-4 flex-row items-center mt-6 shadow-lg shadow-gray-200 border border-gray-50"
-          >
-            <Text className="text-green-600 mr-3 text-lg">🔍</Text>
-            <Text className="text-gray-400 flex-1 font-medium">
-              Search cameras, tools, camping gear...
-            </Text>
-            <View className="bg-green-50 px-2 py-1 rounded-md">
-              <Text className="text-green-700 text-[10px] font-bold">PRO</Text>
-            </View>
-          </TouchableOpacity>
+          <Image
+            source={require("../../assets/images/brittoo-logo.png")}
+            className="absolute right-[-10] bottom-[-10] w-40 h-40 opacity-20"
+            resizeMode="contain"
+            style={{ tintColor: "#ffffff" }}
+          />
         </LinearGradient>
       </View>
 
-      {/* Categories Section */}
-      <View className="px-6 mb-8">
-        <View className="flex-row justify-between items-end mb-4">
-          <View>
-            <Text className="text-xl font-bold text-gray-900">Categories</Text>
-            <Text className="text-gray-500 text-xs">
-              What are you looking for?
-            </Text>
-          </View>
-          <TouchableOpacity onPress={() => router.push("/(tabs)/browse")}>
-            <Text className="text-green-600 font-semibold">View All</Text>
+      {/* 3. MINIMAL SEARCH (CLEANER) */}
+      <View className="px-6 -mt-14 mb-10 z-20">
+        <TouchableOpacity
+          onPress={() => router.push("/(tabs)/browse")}
+          className="bg-white rounded-2xl h-16 px-6 flex-row items-center shadow-xl shadow-black/5 border border-gray-100"
+        >
+          <Ionicons name="search-outline" size={20} color="#9ca3af" />
+          <Text className="text-gray-400 ml-4 font-medium flex-1">
+            Search cameras, drones, tools...
+          </Text>
+          <View className="h-6 w-[1px] bg-gray-200 mr-4" />
+          <Ionicons name="options-outline" size={20} color="#059669" />
+        </TouchableOpacity>
+      </View>
+
+      {/* 4. CURATED CATEGORIES */}
+      <View className="mb-10">
+        <View className="px-6 flex-row justify-between items-center mb-6">
+          <Text className="text-xl font-bold text-gray-900 tracking-tight">
+            Categories
+          </Text>
+          <TouchableOpacity className="flex-row items-center">
+            <Text className="text-green-600 font-bold text-sm">View All</Text>
           </TouchableOpacity>
         </View>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          className="-mx-2"
+          contentContainerStyle={{ paddingLeft: 24, paddingRight: 8 }}
         >
           {categories.map((category) => (
-            <View key={category.id} className="px-2">
-              <CategoryCard
-                name={category.name}
-                icon={category.icon}
-                color={category.color}
-                selected={false}
-                onPress={() => {
-                  filterByCategory(category.name);
-                  router.push("/(tabs)/browse");
-                }}
-              />
-            </View>
+            <TouchableOpacity
+              key={category.id}
+              className="mr-4 items-center"
+              onPress={() => {
+                filterByCategory(category.name);
+                router.push("/(tabs)/browse");
+              }}
+            >
+              <View className="w-16 h-16 bg-gray-50 border border-gray-100 rounded-2xl items-center justify-center mb-2">
+                <Text className="text-2xl">{category.icon}</Text>
+              </View>
+              <Text className="text-xs font-semibold text-gray-700">
+                {category.name}
+              </Text>
+            </TouchableOpacity>
           ))}
         </ScrollView>
       </View>
 
-      {/* Featured Grid */}
-      <View className="px-6 mb-8">
-        <View className="flex-row justify-between items-end mb-4">
+      {/* 5. TRENDING SECTION (GRID REFINED) */}
+      <View className="px-6 mb-10">
+        <View className="flex-row justify-between items-center mb-6">
           <View>
-            <Text className="text-xl font-bold text-gray-900">
-              Trending Now
+            <Text className="text-xl font-bold text-gray-900 tracking-tight">
+              Trending Items
             </Text>
-            <Text className="text-gray-500 text-xs">
-              Top picks from the community
-            </Text>
+            <View className="h-1 w-8 bg-green-500 mt-1 rounded-full" />
           </View>
-          <TouchableOpacity onPress={() => router.push("/(tabs)/browse")}>
-            <Text className="text-green-600 font-semibold">See All</Text>
+          <TouchableOpacity>
+            <Ionicons
+              name="chevron-forward-circle-outline"
+              size={28}
+              color="#059669"
+            />
           </TouchableOpacity>
         </View>
 
         <View className="flex-row flex-wrap justify-between">
           {featuredProducts.map((product) => (
-            <View key={product.id} className="w-[48%] mb-4">
+            <View
+              key={product.id}
+              style={{ width: width * 0.43 }}
+              className="mb-6"
+            >
               <ProductCard
                 product={product}
                 onPress={() => router.push(`/product/${product.id}`)}
@@ -150,34 +192,58 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {/* Trust & Features Section */}
-      <View className="bg-gray-50 py-10 px-6">
-        <Text className="text-center text-gray-400 font-bold tracking-widest uppercase text-xs mb-8">
-          The Brittoo Advantage
+      {/* 6. PROFESSIONAL STATS SECTION */}
+      <View className="bg-gray-50 py-12 px-6 border-2 border-green-500 rounded-2xl mx-2 mb-10 relative overflow-hidden">
+        <Text className="text-green-500 font-bold uppercase tracking-[3px] text-[10px] mb-2 text-center">
+          Why Brittoo
         </Text>
+        <Text className="text-green-600 text-2xl font-bold text-center mb-10">
+          The New Standard of Sharing
+        </Text>
+
         <View className="flex-row flex-wrap justify-between">
           {[
-            { icon: "💰", title: "Save Money", desc: "Up to 80% cheaper" },
-            { icon: "🛡️", title: "Secure", desc: "Verified users" },
-            { icon: "🌱", title: "Eco-Friendly", desc: "Sustainable living" },
-            { icon: "⚡", title: "Quick", desc: "Instant booking" },
+            {
+              icon: "shield-checkmark-outline",
+              title: "Protected",
+              desc: "Insurance included",
+            },
+            {
+              icon: "wallet-outline",
+              title: "Cost Effective",
+              desc: "Save up to 70%",
+            },
+            {
+              icon: "leaf-outline",
+              title: "Eco-Conscious",
+              desc: "Reduce footprint",
+            },
+            {
+              icon: "flash-outline",
+              title: "Instant Access",
+              desc: "Nearby pick-up",
+            },
           ].map((item, index) => (
             <View
               key={index}
-              className="w-[48%] bg-white p-5 rounded-3xl mb-4 border border-gray-100 shadow-sm"
+              className="w-[48%] bg-white/5 border border-green-500 p-5 rounded-2xl mb-4 touchable-opacity"
             >
-              <Text className="text-2xl mb-2">{item.icon}</Text>
-              <Text className="font-bold text-gray-900">{item.title}</Text>
-              <Text className="text-[10px] text-gray-500 mt-1 uppercase tracking-tighter">
+              <Ionicons name={item.icon as any} size={24} color="#10b981" />
+              <Text className="font-bold text-gray-800 mt-3 text-sm">
+                {item.title}
+              </Text>
+              <Text className="text-[11px] text-gray-800 mt-1 leading-4">
                 {item.desc}
               </Text>
             </View>
           ))}
         </View>
       </View>
-      <HowItWorks />
-      {/* Modern CTA Card */}
-      <BuyCreditsScreen />
+
+      <View className="py-8 bg-white">
+        <HowItWorks />
+        <BuyCreditsScreen />
+      </View>
     </ScrollView>
   );
 }

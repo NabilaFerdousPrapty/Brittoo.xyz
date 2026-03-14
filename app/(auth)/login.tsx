@@ -61,11 +61,7 @@ export default function Login() {
   };
 
   const handleForgotPassword = () => {
-    // Navigate to forgot password screen (create this if needed)
-    Alert.alert(
-      "Forgot Password",
-      "Please contact support or reset your password.",
-    );
+    router.push("/(auth)/forgot-password");
   };
 
   const handleSignUp = () => {

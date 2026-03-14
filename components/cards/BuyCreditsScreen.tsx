@@ -256,10 +256,10 @@ export default function BuyCreditsScreen() {
       >
         {/* Main Header */}
         <View className="mb-6">
-          <Text className="text-3xl font-bold text-gray-900 tracking-tight mb-2">
+          <Text className="text-3xl font-bold text-gray-900 tracking-tight mb-2 text-center">
             Buy Credits & Start Your Rental Journey
           </Text>
-          <Text className="text-sm text-gray-600 leading-5">
+          <Text className="text-sm text-gray-600 leading-5 text-justify">
             Choose from RED or Blue Credits to access a seamless rental
             experience. Whether you're earning from your unused items or renting
             what you need, our credit system makes it simple, secure, and
