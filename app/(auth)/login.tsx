@@ -1,15 +1,17 @@
 import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
+  Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
+  StatusBar,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import Button from "../../components/common/Button";
 import Input from "../../components/common/Input";
 import { useAuthStore } from "../../store/useAuthStore";
 
@@ -30,13 +32,11 @@ export default function Login() {
     if (!email) {
       newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = "Email is invalid";
+      newErrors.email = "Please enter a valid email address";
     }
 
     if (!password) {
       newErrors.password = "Password is required";
-    } else if (password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
     }
 
     setErrors(newErrors);
@@ -47,140 +47,199 @@ export default function Login() {
     if (validateForm()) {
       const success = await login(email, password);
       if (success) {
-        router.back();
+        // Navigate to tabs on successful login
+        router.replace("/(tabs)");
       } else {
-        setErrors({ email: "Invalid email or password" });
+        // Show error message but stay on login page
+        Alert.alert(
+          "Login Failed",
+          "Invalid email or password. Please try again.",
+          [{ text: "OK" }],
+        );
       }
     }
+  };
+
+  const handleForgotPassword = () => {
+    // Navigate to forgot password screen (create this if needed)
+    Alert.alert(
+      "Forgot Password",
+      "Please contact support or reset your password.",
+    );
+  };
+
+  const handleSignUp = () => {
+    // Navigate to signup screen
+    router.push("/(auth)/signup");
   };
 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      className="flex-1 bg-white"
+      className="flex-1"
     >
-      {/* Background Decoration */}
-      <View className="absolute top-0 right-0 w-64 h-64 bg-green-100 rounded-full -mr-32 -mt-32 opacity-50" />
-      <View className="absolute bottom-0 left-0 w-80 h-80 bg-green-50 rounded-full -ml-40 -mb-40 opacity-50" />
+      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
 
-      <View className="flex-1 justify-center p-6">
-        {/* Logo and Header Section */}
-        <View className="items-center mb-10">
-          {/* Logo with Shadow - Fixed Version */}
-          <View className="relative mb-4">
-            <View className="absolute inset-0 bg-green-400 rounded-full opacity-20 blur-xl transform scale-150" />
+      {/* Background gradient */}
+      <LinearGradient
+        colors={["#ffffff", "#f9fafb"]}
+        className="absolute inset-0"
+      />
+      <View className="absolute inset-0 opacity-[0.03]">
+        {[...Array(6)].map((_, i) => (
+          <View
+            key={`v-${i}`}
+            className="absolute h-full bg-gray-300"
+            style={{ width: 1, left: `${(i + 1) * 16.66}%` }}
+          />
+        ))}
+        {[...Array(4)].map((_, i) => (
+          <View
+            key={`h-${i}`}
+            className="absolute w-full bg-gray-300"
+            style={{ height: 1, top: `${(i + 1) * 20}%` }}
+          />
+        ))}
+      </View>
 
-            {/* Shadow container for image */}
-            <View
-              className="rounded-2xl bg-white p-2"
-              style={{
-                shadowColor: "#15803d",
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.2,
-                shadowRadius: 8,
-                elevation: 8,
-              }}
-            >
+      {/* Main content */}
+      <View className="flex-1 justify-center px-6">
+        <View
+          className="bg-white rounded-3xl px-8 py-10 mx-auto w-full max-w-sm"
+          style={{
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 10 },
+            shadowOpacity: 0.05,
+            shadowRadius: 20,
+            elevation: 20,
+          }}
+        >
+          {/* Logo */}
+          <View className="items-center mb-7">
+            <View className="bg-green-50 rounded-3xl px-2 mb-3">
               <Image
                 source={require("../../assets/images/brittoo-logo.png")}
-                className="w-24 h-24"
+                className="w-20 h-20"
                 resizeMode="contain"
               />
             </View>
-
-            {/* Small Decorative Badge */}
-            <View className="absolute -bottom-2 -right-2 bg-green-500 rounded-full px-3 py-1 shadow-md">
-              <Text className="text-white text-xs font-bold">RENT</Text>
-            </View>
+            <Text className="text-2xl font-semibold text-gray-900">
+              Welcome back
+            </Text>
+            <Text className="text-sm text-gray-500 mt-1 text-center">
+              Log in! That 8 AM class isn't getting any closer
+            </Text>
           </View>
 
-          {/* Brand Name */}
-          <Text className="text-3xl font-bold text-green-700 mb-2">
-            Welcome Back!
-          </Text>
-
-          <Text className="text-gray-500 text-base">
-            Login to continue your rental journey
-          </Text>
-        </View>
-
-        {/* Form Section */}
-        <View className="space-y-4">
-          {/* Email Input with Icon */}
-          <View className="relative">
-            <View className="absolute left-3 top-4 z-10">
-              <Ionicons name="mail-outline" size={20} color="#9CA3AF" />
+          {/* Form */}
+          <View className="space-y-5">
+            {/* Email */}
+            <View>
+              <Text className="text-xs text-gray-600 mb-1">Email address</Text>
+              <View className="relative">
+                <Input
+                  placeholder="john.doe@company.com"
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  error={errors.email}
+                  className="pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-800"
+                  placeholderTextColor="#9CA3AF"
+                />
+                <Ionicons
+                  name="mail-outline"
+                  size={18}
+                  color="#9CA3AF"
+                  style={{ position: "absolute", left: 12, top: 14 }}
+                />
+              </View>
             </View>
-            <Input
-              placeholder="Enter your email"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              error={errors.email}
-              className="pl-10"
-            />
-          </View>
 
-          {/* Password Input with Icon and Toggle */}
-          <View className="relative">
-            <View className="absolute left-3 top-4 z-10">
-              <Ionicons name="lock-closed-outline" size={20} color="#9CA3AF" />
+            {/* Password */}
+            <View>
+              <Text className="text-xs text-gray-600 mb-1">Password</Text>
+              <View className="relative">
+                <Input
+                  placeholder="••••••••"
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!showPassword}
+                  error={errors.password}
+                  className="pl-10 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-800"
+                  placeholderTextColor="#9CA3AF"
+                />
+                <Ionicons
+                  name="lock-closed-outline"
+                  size={18}
+                  color="#9CA3AF"
+                  style={{ position: "absolute", left: 12, top: 14 }}
+                />
+                <TouchableOpacity
+                  onPress={() => setShowPassword(!showPassword)}
+                  style={{ position: "absolute", right: 12, top: 14 }}
+                >
+                  <Ionicons
+                    name={showPassword ? "eye-off-outline" : "eye-outline"}
+                    size={18}
+                    color="#9CA3AF"
+                  />
+                </TouchableOpacity>
+              </View>
             </View>
-            <Input
-              placeholder="Enter your password"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry={!showPassword}
-              error={errors.password}
-              className="pl-10"
-            />
+
+            {/* Forgot Password */}
             <TouchableOpacity
-              onPress={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-4 z-10"
+              onPress={handleForgotPassword}
+              className="self-end"
             >
-              <Ionicons
-                name={showPassword ? "eye-off-outline" : "eye-outline"}
-                size={20}
-                color="#9CA3AF"
-              />
+              <Text className="text-xs text-gray-600 underline">
+                Forgot password?
+              </Text>
             </TouchableOpacity>
           </View>
 
-          {/* Forgot Password */}
-          <TouchableOpacity className="self-end">
-            <Text className="text-green-600 text-sm font-medium">
-              Forgot Password?
+          {/* Login Button */}
+          <TouchableOpacity
+            onPress={handleLogin}
+            disabled={isLoading}
+            className="mt-6 rounded-xl overflow-hidden"
+            activeOpacity={0.8}
+          >
+            <LinearGradient
+              colors={["#22c55e", "#15803d"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              className="py-3.5 items-center justify-center"
+            >
+              <Text className="text-white text-base font-semibold">
+                {isLoading ? "Signing in..." : "Sign In"}
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
+
+          {/* Divider */}
+          <View className="flex-row items-center my-5">
+            <View className="flex-1 h-px bg-gray-200" />
+            <Text className="mx-3 text-xs text-gray-400">OR</Text>
+            <View className="flex-1 h-px bg-gray-200" />
+          </View>
+
+          {/* Sign-up prompt */}
+          <TouchableOpacity onPress={handleSignUp}>
+            <Text className="text-center text-sm text-gray-600">
+              New to Brittoo?{" "}
+              <Text className="text-green-700 font-semibold">Start here</Text>
             </Text>
           </TouchableOpacity>
-        </View>
 
-        {/* Login Button */}
-        <Button
-          title="Login"
-          onPress={handleLogin}
-          loading={isLoading}
-          size="lg"
-          className="mt-6 bg-green-500"
-        />
-
-        {/* OR Divider */}
-        <View className="flex-row items-center my-6">
-          <View className="flex-1 h-px bg-gray-200" />
-          <Text className="mx-4 text-gray-400 text-sm">OR</Text>
-          <View className="flex-1 h-px bg-gray-200" />
-        </View>
-
-        {/* Sign Up Link */}
-        <TouchableOpacity
-          onPress={() => router.push("/(auth)/signup")}
-          className="mt-2"
-        >
-          <Text className="text-center text-gray-600">
-            Don't have an account?{" "}
-            <Text className="text-green-600 font-bold">Sign Up</Text>
+          {/* Legal */}
+          <Text className="text-center text-[10px] text-gray-400 mt-4">
+            By signing in you agree to our{" "}
+            <Text className="underline">Terms</Text> &{" "}
+            <Text className="underline">Privacy</Text>
           </Text>
-        </TouchableOpacity>
+        </View>
       </View>
     </KeyboardAvoidingView>
   );
