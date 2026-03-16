@@ -23,8 +23,11 @@ brittoo/
 │   │   ├── browse.tsx         # Browse Items
 │   │   ├── add-item.tsx       # List New Item
 │   │   └── profile.tsx        # User Profile
-│   └── how-it-works.tsx
+│   |
 ├── components/
+│   ├── cards/
+|   |   ├──how-it-works.tsx
+|   |   ├──BuyCreditsScreen.tsx
 │   ├── common/
 │   │   ├── Button.tsx
 │   │   ├── Input.tsx

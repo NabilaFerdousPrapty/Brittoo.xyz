@@ -31,7 +31,7 @@ export default function ProductCard({ product, onPress }: ProductCardProps) {
         <View className="flex-row justify-between items-center mt-2">
           <View className="flex-row items-center">
             <Text className="text-green-600 font-bold text-lg">
-              ${product.price}
+              ৳{product.price}
             </Text>
             <Text className="text-gray-500 text-sm">/{product.priceUnit}</Text>
           </View>
