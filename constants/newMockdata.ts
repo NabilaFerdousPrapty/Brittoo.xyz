@@ -1,7 +1,4 @@
-// ============================================
-// MOCK DATA FOR BRITTOO APP
-// ============================================
-
+// mockData.ts
 import { v4 as uuidv4 } from "uuid";
 import {
   BccStatus,
@@ -13,6 +10,7 @@ import {
   CollectionOrDepositMethod,
   Coupon,
   Message,
+  PasswordResetToken,
   PaymentGateway,
   Product,
   ProductCondition,
@@ -20,18 +18,21 @@ import {
   PurchaseRequest,
   PurchaseRequestPaymentStatus,
   PurchaseRequestStatus,
+  PushSubscription,
   RedCacheCredit,
   RentalRequest,
   RentalRequestRccUsage,
   RentalRequestStatus,
+  Review,
   Role,
   SecurityScore,
+  SentNotification,
   User,
   UserNotification,
   VerifyStatus,
   WithdrawalRequest,
   WithdrawalStatus,
-} from "./types";
+} from "../types/brittoo.types";
 
 // ============================================
 // USERS (50)
@@ -56,29 +57,38 @@ export const mockUsers: User[] = Array.from({ length: 50 }, (_, i) => {
   ];
 
   const roll = `RUET${String(1901001 + i).slice(-7)}`;
-  const name = [
-    "Md. Rahman",
-    "Sakib Hasan",
-    "Tamim Iqbal",
-    "Musfiqur Rahim",
-    "Mahmudullah Riyad",
-    "Shakib Al Hasan",
-    "Liton Das",
-    "Mashrafe Mortaza",
-    "Taskin Ahmed",
-    "Mustafizur Rahman",
-  ][i % 10];
+  const names = [
+    "Rahman",
+    "Hasan",
+    "Iqbal",
+    "Rahim",
+    "Riyad",
+    "Al Hasan",
+    "Das",
+    "Mortaza",
+    "Ahmed",
+    "Rahman",
+  ];
 
   return {
     id,
-    name: `${name} ${i + 1}`,
+    name: `${names[i % 10]} ${Math.floor(i / 10) + 1}`,
     email: `${roll.toLowerCase()}@student.ruet.ac.bd`,
     roll,
     password: "$2b$10$hashed_password_here",
     phoneNumber: `017${String(10000000 + i).slice(-8)}`,
-    selfie: `https://api.brittoo.com/uploads/selfies/${id}.jpg`,
-    idCardFront: `https://api.brittoo.com/uploads/id-cards/${id}-front.jpg`,
-    idCardBack: `https://api.brittoo.com/uploads/id-cards/${id}-back.jpg`,
+    selfie:
+      i % 3 === 0
+        ? `https://api.brittoo.com/uploads/selfies/${id}.jpg`
+        : undefined,
+    idCardFront:
+      i % 2 === 0
+        ? `https://api.brittoo.com/uploads/id-cards/${id}-front.jpg`
+        : undefined,
+    idCardBack:
+      i % 2 === 0
+        ? `https://api.brittoo.com/uploads/id-cards/${id}-back.jpg`
+        : undefined,
     ipAddress: `192.168.${Math.floor(i / 250)}.${i % 250}`,
     latitude: 24.9045 + (Math.random() - 0.5) * 0.1,
     longitude: 91.8687 + (Math.random() - 0.5) * 0.1,
@@ -89,17 +99,39 @@ export const mockUsers: User[] = Array.from({ length: 50 }, (_, i) => {
     otp: i % 10 === 0 ? "123456" : undefined,
     otpExpiry: i % 10 === 0 ? new Date(Date.now() + 300000) : undefined,
     otpSentCount: Math.floor(Math.random() * 5),
-    lastOtpSentDate: new Date(Date.now() - Math.random() * 86400000),
+    lastOtpSentDate:
+      i % 10 === 0
+        ? new Date(Date.now() - Math.random() * 86400000)
+        : undefined,
     securityScore: securityScores[i % 5],
     isSuspended: i % 20 === 0,
     suspensionCount: i % 20 === 0 ? Math.floor(Math.random() * 3) + 1 : 0,
-    suspensionReasons: i % 20 === 0 ? ["Violation of terms"] : [],
+    suspensionReasons:
+      i % 20 === 0
+        ? ["Violation of community guidelines", "Spam activity"]
+        : [],
     createdAt: new Date(Date.now() - Math.random() * 365 * 86400000),
     updatedAt: new Date(),
     deletedAt: i % 50 === 0 ? new Date() : undefined,
     isValidRuetMail: true,
   };
 });
+
+// ============================================
+// PASSWORD RESET TOKENS (50)
+// ============================================
+
+export const mockPasswordResetTokens: PasswordResetToken[] = Array.from(
+  { length: 50 },
+  (_, i) => ({
+    id: uuidv4(),
+    token: `reset-token-${Math.random().toString(36).substring(2)}`,
+    userId: mockUsers[i % mockUsers.length].id,
+    used: i % 5 === 0,
+    expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    createdAt: new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000),
+  }),
+);
 
 // ============================================
 // PRODUCTS (50)
@@ -182,9 +214,7 @@ export const mockProducts: Product[] = Array.from({ length: 50 }, (_, i) => {
     omv: Math.floor(Math.random() * 50000) + 1000,
     secondHandPrice: Math.floor(Math.random() * 30000) + 500,
     tags: `tag1, tag2, tag${i % 10}`,
-    productDescription: `This is a great ${productNames[i % productNames.length]} in ${
-      productConditions[i % productConditions.length]
-    } condition. Perfect for students!`,
+    productDescription: `This is a great ${productNames[i % productNames.length]} in ${productConditions[i % productConditions.length]} condition. Perfect for students! Features include high quality and durability.`,
     quantity: Math.floor(Math.random() * 10) + 1,
     ownerId,
     isOnHold: i % 10 === 0,
@@ -267,9 +297,11 @@ export const mockBccTransactions: BccTransaction[] = Array.from(
       walletId: wallet?.id || mockBccWallets[0].id,
       rentalRequestId: i % 3 === 0 ? uuidv4() : undefined,
       amount: Math.floor(Math.random() * 5000) + 100,
-      paymentGateway: paymentGateways[i % paymentGateways.length],
+      paymentGateway:
+        i % 4 === 0 ? paymentGateways[i % paymentGateways.length] : undefined,
       transactionId: `TRX-${Date.now()}-${i}`,
-      numberUsedInTrx: `017${String(10000000 + i).slice(-8)}`,
+      numberUsedInTrx:
+        i % 5 === 0 ? `017${String(10000000 + i).slice(-8)}` : undefined,
       transactionType: transactionTypes[i % transactionTypes.length],
       status: bccStatuses[i % bccStatuses.length],
       rejectReason: i % 10 === 0 ? "Invalid transaction details" : undefined,
@@ -342,7 +374,12 @@ export const mockRedCacheCredits: RedCacheCredit[] = Array.from(
           : undefined,
       giftedBy:
         i % 7 === 0 ? mockUsers[(i + 10) % mockUsers.length].id : undefined,
-      giftReason: i % 7 === 0 ? "Referral bonus" : undefined,
+      giftReason:
+        i % 7 === 0
+          ? "Referral bonus"
+          : i % 7 === 1
+            ? "Festival offer"
+            : "Loyalty reward",
       createdAt: new Date(Date.now() - Math.random() * 180 * 86400000),
       updatedAt: new Date(),
       deletedAt: i % 50 === 0 ? new Date() : undefined,
@@ -549,98 +586,6 @@ export const mockPurchaseRequests: PurchaseRequest[] = Array.from(
 );
 
 // ============================================
-// CHAT ROOMS (50)
-// ============================================
-
-export const mockChatRooms: ChatRoom[] = Array.from({ length: 50 }, (_, i) => {
-  const product = mockProducts[i % mockProducts.length];
-  const buyer = mockUsers[(i + 1) % mockUsers.length];
-  const seller =
-    mockUsers.find((u) => u.id === product.ownerId) || mockUsers[0];
-
-  return {
-    id: uuidv4(),
-    productId: product.id,
-    buyerId: buyer.id,
-    sellerId: seller.id,
-    isActive: i % 10 !== 0,
-    createdAt: new Date(Date.now() - Math.random() * 90 * 86400000),
-    updatedAt: new Date(),
-  };
-});
-
-// ============================================
-// MESSAGES (50 per chat room - total 2500, but we'll do 50 for mock)
-// ============================================
-
-export const mockMessages: Message[] = Array.from({ length: 50 }, (_, i) => {
-  const chatRoom = mockChatRooms[i % mockChatRooms.length];
-  const sender =
-    mockUsers.find(
-      (u) => u.id === chatRoom.buyerId || u.id === chatRoom.sellerId,
-    ) || mockUsers[0];
-
-  const messageContents = [
-    "Hi, is this still available?",
-    "Yes, it is available.",
-    "What is the condition?",
-    "Can I get a discount?",
-    "When can I pick it up?",
-    "Can you deliver?",
-    "Is the price negotiable?",
-    "I am interested, please hold it for me.",
-    "Can you send more photos?",
-    "Thank you!",
-  ];
-
-  return {
-    id: uuidv4(),
-    chatRoomId: chatRoom.id,
-    senderId: sender.id,
-    content: messageContents[i % messageContents.length],
-    isRead: i % 3 !== 0,
-    createdAt: new Date(Date.now() - Math.random() * 30 * 86400000),
-  };
-});
-
-// ============================================
-// USER NOTIFICATIONS (50)
-// ============================================
-
-const notificationTitles = [
-  "New Rental Request",
-  "Rental Request Accepted",
-  "Payment Received",
-  "Product Delivered",
-  "New Message",
-  "Rental Period Ending Soon",
-  "Refund Processed",
-  "Account Verification Required",
-  "Special Offer",
-  "System Update",
-];
-
-export const mockUserNotifications: UserNotification[] = Array.from(
-  { length: 50 },
-  (_, i) => {
-    const user = mockUsers[i % mockUsers.length];
-
-    return {
-      id: uuidv4(),
-      userId: user.id,
-      title: notificationTitles[i % notificationTitles.length],
-      body: `This is a notification body for ${notificationTitles[i % notificationTitles.length]}. Please take necessary action.`,
-      data: {
-        url: `/dashboard/${i % 2 === 0 ? "rentals" : "messages"}`,
-        notificationType: i % 5,
-      },
-      isRead: i % 4 !== 0,
-      createdAt: new Date(Date.now() - Math.random() * 30 * 86400000),
-    };
-  },
-);
-
-// ============================================
 // COUPONS (50)
 // ============================================
 
@@ -670,47 +615,183 @@ export const mockCoupons: Coupon[] = Array.from({ length: 50 }, (_, i) => {
 });
 
 // ============================================
-// PUSH SUBSCRIPTIONS (50)
+// CHAT ROOMS (50)
 // ============================================
 
-export const mockPushSubscriptions = Array.from({ length: 50 }, (_, i) => {
-  const user = mockUsers[i % mockUsers.length];
+export const mockChatRooms: ChatRoom[] = Array.from({ length: 50 }, (_, i) => {
+  const product = mockProducts[i % mockProducts.length];
+  const buyer = mockUsers[(i + 1) % mockUsers.length];
+  const seller =
+    mockUsers.find((u) => u.id === product.ownerId) || mockUsers[0];
 
   return {
     id: uuidv4(),
-    userId: user.id,
-    endpoint: `https://fcm.googleapis.com/fcm/send/device-${i}-${user.id}`,
-    keys: {
-      p256dh: `BIPM2cJXjJ3f${i}V7k5QZ8yL3pR9tW6nX1sK4mO7aE2bC0dF5gH8jK1lN4qR7tY0`,
-      auth: `qR7tY0uI3oP5aE2bC0dF5gH8jK1lN4qR7tY0uI3oP5aE2b`,
-    },
-    createdAt: new Date(Date.now() - Math.random() * 180 * 86400000),
+    productId: product.id,
+    buyerId: buyer.id,
+    sellerId: seller.id,
+    isActive: i % 10 !== 0,
+    createdAt: new Date(Date.now() - Math.random() * 90 * 86400000),
     updatedAt: new Date(),
   };
 });
 
 // ============================================
-// SENT NOTIFICATIONS (50)
+// MESSAGES (50)
 // ============================================
 
-export const mockSentNotifications = Array.from({ length: 50 }, (_, i) => {
-  const targetTypes = [
-    "all",
-    "students",
-    "faculty",
-    "verified-users",
-    "premium",
-  ];
-  const targetUsers = mockUsers
-    .slice(0, Math.floor(Math.random() * 20) + 5)
-    .map((u) => u.id);
+const messageContents = [
+  "Hi, is this still available?",
+  "Yes, it is available.",
+  "What is the condition?",
+  "Can I get a discount?",
+  "When can I pick it up?",
+  "Can you deliver?",
+  "Is the price negotiable?",
+  "I am interested, please hold it for me.",
+  "Can you send more photos?",
+  "Thank you!",
+  "When is the earliest I can get it?",
+  "Does it come with warranty?",
+  "Can I test it before buying?",
+  "What is the return policy?",
+  "Is there any damage?",
+];
+
+export const mockMessages: Message[] = Array.from({ length: 50 }, (_, i) => {
+  const chatRoom = mockChatRooms[i % mockChatRooms.length];
+  const sender =
+    mockUsers.find(
+      (u) => u.id === chatRoom.buyerId || u.id === chatRoom.sellerId,
+    ) || mockUsers[0];
 
   return {
     id: uuidv4(),
-    title: `System Notification ${i + 1}`,
-    body: `This is a broadcast notification about important updates to the Brittoo platform. Please check your dashboard for details.`,
-    targets: i % 5 === 0 ? "all" : targetUsers.join(","),
-    createdAt: new Date(Date.now() - Math.random() * 60 * 86400000),
+    chatRoomId: chatRoom.id,
+    senderId: sender.id,
+    content: messageContents[i % messageContents.length],
+    isRead: i % 3 !== 0,
+    createdAt: new Date(Date.now() - Math.random() * 30 * 86400000),
+  };
+});
+
+// ============================================
+// USER NOTIFICATIONS (50)
+// ============================================
+
+const notificationTitles = [
+  "New Rental Request",
+  "Rental Request Accepted",
+  "Payment Received",
+  "Product Delivered",
+  "New Message",
+  "Rental Period Ending Soon",
+  "Refund Processed",
+  "Account Verification Required",
+  "Special Offer",
+  "System Update",
+  "Product Approved",
+  "Withdrawal Processed",
+  "Credit Expiring Soon",
+  "Review Received",
+  "Security Alert",
+];
+
+export const mockUserNotifications: UserNotification[] = Array.from(
+  { length: 50 },
+  (_, i) => {
+    const user = mockUsers[i % mockUsers.length];
+
+    return {
+      id: uuidv4(),
+      userId: user.id,
+      title: notificationTitles[i % notificationTitles.length],
+      body: `This is a notification body for ${notificationTitles[i % notificationTitles.length]}. Please take necessary action.`,
+      data: {
+        url: `/dashboard/${i % 2 === 0 ? "rentals" : "messages"}`,
+        notificationType: i % 5,
+        id: uuidv4(),
+      },
+      isRead: i % 4 !== 0,
+      createdAt: new Date(Date.now() - Math.random() * 30 * 86400000),
+    };
+  },
+);
+
+// ============================================
+// PUSH SUBSCRIPTIONS (50)
+// ============================================
+
+export const mockPushSubscriptions: PushSubscription[] = Array.from(
+  { length: 50 },
+  (_, i) => {
+    const user = mockUsers[i % mockUsers.length];
+
+    return {
+      id: uuidv4(),
+      userId: user.id,
+      endpoint: `https://fcm.googleapis.com/fcm/send/device-${i}-${user.id}`,
+      keys: {
+        p256dh: `BIPM2cJXjJ3f${i}V7k5QZ8yL3pR9tW6nX1sK4mO7aE2bC0dF5gH8jK1lN4qR7tY0`,
+        auth: `qR7tY0uI3oP5aE2bC0dF5gH8jK1lN4qR7tY0uI3oP5aE2b`,
+      },
+      createdAt: new Date(Date.now() - Math.random() * 180 * 86400000),
+      updatedAt: new Date(),
+    };
+  },
+);
+
+// ============================================
+// SENT NOTIFICATIONS (50)
+// ============================================
+
+export const mockSentNotifications: SentNotification[] = Array.from(
+  { length: 50 },
+  (_, i) => {
+    const targetTypes = ["all", "students", "faculty", "verified-users"];
+    const targetUsers = mockUsers
+      .slice(0, Math.floor(Math.random() * 20) + 5)
+      .map((u) => u.id);
+
+    return {
+      id: uuidv4(),
+      title: `System Notification ${i + 1}`,
+      body: `This is a broadcast notification about important updates to the Brittoo platform. Please check your dashboard for details.`,
+      targets: i % 4 === 0 ? "all" : targetUsers.join(","),
+      createdAt: new Date(Date.now() - Math.random() * 60 * 86400000),
+    };
+  },
+);
+
+// ============================================
+// REVIEWS (50)
+// ============================================
+
+export const mockReviews: Review[] = Array.from({ length: 50 }, (_, i) => {
+  const product = mockProducts[i % mockProducts.length];
+  const user = mockUsers[(i + 5) % mockUsers.length];
+  const ratings = [1, 2, 3, 4, 5];
+  const comments = [
+    "Excellent product, highly recommend!",
+    "Good quality, worth the price.",
+    "Average product, nothing special.",
+    "Not as described, disappointed.",
+    "Perfect condition, great seller!",
+    "Fast delivery, product is awesome.",
+    "Would buy again from this seller.",
+    "Product arrived early, very satisfied.",
+    "Some minor issues but overall good.",
+    "Best purchase ever!",
+  ];
+
+  return {
+    id: uuidv4(),
+    productId: product.id,
+    userId: user.id,
+    userName: user.name,
+    userAvatar: user.selfie,
+    rating: ratings[i % ratings.length],
+    comment: comments[i % comments.length],
+    date: new Date(Date.now() - Math.random() * 90 * 86400000).toISOString(),
   };
 });
 
@@ -760,12 +841,28 @@ export const getMockWalletByUser = (userId: string): BccWallet | undefined => {
   return mockBccWallets.find((wallet) => wallet.userId === userId);
 };
 
+export const getMockProductsByOwner = (ownerId: string): Product[] => {
+  return mockProducts.filter((product) => product.ownerId === ownerId);
+};
+
+export const getMockReviewsByProduct = (productId: string): Review[] => {
+  return mockReviews.filter((review) => review.productId === productId);
+};
+
+export const getAverageRating = (productId: string): number => {
+  const reviews = getMockReviewsByProduct(productId);
+  if (reviews.length === 0) return 0;
+  const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
+  return sum / reviews.length;
+};
+
 // ============================================
 // AGGREGATED DATA EXPORTS
 // ============================================
 
 export const mockData = {
   users: mockUsers,
+  passwordResetTokens: mockPasswordResetTokens,
   products: mockProducts,
   bccWallets: mockBccWallets,
   bccTransactions: mockBccTransactions,
@@ -774,12 +871,13 @@ export const mockData = {
   rentalRequests: mockRentalRequests,
   rentalRequestRccUsage: mockRentalRequestRccUsage,
   purchaseRequests: mockPurchaseRequests,
+  coupons: mockCoupons,
   chatRooms: mockChatRooms,
   messages: mockMessages,
   userNotifications: mockUserNotifications,
-  coupons: mockCoupons,
   pushSubscriptions: mockPushSubscriptions,
   sentNotifications: mockSentNotifications,
+  reviews: mockReviews,
 };
 
 export default mockData;
