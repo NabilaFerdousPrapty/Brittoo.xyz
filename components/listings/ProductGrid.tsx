@@ -19,7 +19,7 @@ export default function ProductGrid({
       renderItem={({ item }) => (
         <ProductCard product={item} onPress={() => onProductPress(item)} />
       )}
-      contentContainerClassName="p-4"
+      contentContainerClassName="p-3 "
       showsVerticalScrollIndicator={false}
     />
   );
