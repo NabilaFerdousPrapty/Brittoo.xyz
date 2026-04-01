@@ -1,11 +1,12 @@
+// components/grids/ProductGrid.tsx
 import React from "react";
 import { FlatList } from "react-native";
-import { Product } from "../../types/product.types";
+import { UnifiedProduct } from "../../types/unified.types";
 import ProductCard from "../cards/ProductCard";
 
 interface ProductGridProps {
-  products: Product[];
-  onProductPress: (product: Product) => void;
+  products: UnifiedProduct[];
+  onProductPress: (product: UnifiedProduct) => void;
 }
 
 export default function ProductGrid({
@@ -19,7 +20,7 @@ export default function ProductGrid({
       renderItem={({ item }) => (
         <ProductCard product={item} onPress={() => onProductPress(item)} />
       )}
-      contentContainerClassName="p-3 "
+      contentContainerClassName="p-3"
       showsVerticalScrollIndicator={false}
     />
   );

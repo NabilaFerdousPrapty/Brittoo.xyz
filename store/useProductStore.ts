@@ -1,6 +1,7 @@
+// store/productStore.ts
 import { create } from "zustand";
-import { mockProducts } from "../constants/mockData";
-import { Product } from "../types/product.types";
+import { mockProducts } from "../constants/newMockdata";
+import { Product } from "../types/brittoo.types";
 
 interface ProductStore {
   products: Product[];
@@ -33,10 +34,12 @@ export const useProductStore = create<ProductStore>((set, get) => ({
     const { products, selectedCategory } = get();
     const filtered = products.filter((product) => {
       const matchesSearch =
-        product.title.toLowerCase().includes(query.toLowerCase()) ||
-        product.description.toLowerCase().includes(query.toLowerCase());
+        product.name.toLowerCase().includes(query.toLowerCase()) ||
+        (product.productDescription?.toLowerCase() || "").includes(
+          query.toLowerCase(),
+        );
       const matchesCategory = selectedCategory
-        ? product.category === selectedCategory
+        ? product.productType === selectedCategory
         : true;
       return matchesSearch && matchesCategory;
     });
@@ -47,10 +50,14 @@ export const useProductStore = create<ProductStore>((set, get) => ({
     const { products, searchQuery } = get();
     const filtered = products.filter((product) => {
       const matchesSearch = searchQuery
-        ? product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          product.description.toLowerCase().includes(searchQuery.toLowerCase())
+        ? product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (product.productDescription?.toLowerCase() || "").includes(
+            searchQuery.toLowerCase(),
+          )
         : true;
-      const matchesCategory = category ? product.category === category : true;
+      const matchesCategory = category
+        ? product.productType === category
+        : true;
       return matchesSearch && matchesCategory;
     });
     set({ selectedCategory: category, filteredProducts: filtered });
@@ -59,11 +66,17 @@ export const useProductStore = create<ProductStore>((set, get) => ({
   fetchProducts: async () => {
     set({ isLoading: true });
     try {
-      // Simulate API call
+      // Simulate API call delay
       await new Promise((resolve) => setTimeout(resolve, 500));
+
+      // Filter out deleted products and only show available ones
+      const availableProducts = mockProducts.filter(
+        (product) => !product.deletedAt && product.isAvailable,
+      );
+
       set({
-        products: mockProducts,
-        filteredProducts: mockProducts,
+        products: availableProducts,
+        filteredProducts: availableProducts,
         isLoading: false,
       });
     } catch (error) {
