@@ -12,7 +12,7 @@ import {
   View,
 } from "react-native";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
-import { mockReviews } from "../../constants/mockData";
+import { mockReviews, mockUsers } from "../../constants/newMockdata";
 import { useAuthStore } from "../../store/useAuthStore";
 import { useProductStore } from "../../store/useProductStore";
 
@@ -41,12 +41,59 @@ export default function ProductDetailScreen() {
     return <LoadingSpinner fullScreen />;
   }
 
+  // Get product images - use productImages array from Brittoo product
+  const productImages = selectedProduct.productImages || [];
+
+  // Get product reviews
   const productReviews = mockReviews.filter(
     (r) => r.productId === selectedProduct.id,
   );
 
-  const averageRating = selectedProduct.rating;
-  const reviewCount = selectedProduct.reviewsCount;
+  // Get owner info
+  const owner = mockUsers.find((u) => u.id === selectedProduct.ownerId);
+
+  // Calculate average rating
+  const averageRating =
+    productReviews.length > 0
+      ? productReviews.reduce((sum, r) => sum + r.rating, 0) /
+        productReviews.length
+      : 0;
+
+  const reviewCount = productReviews.length;
+
+  // Get display price
+  const getDisplayPrice = () => {
+    if (selectedProduct.isForSaleOnly && selectedProduct.askingPrice) {
+      return selectedProduct.askingPrice;
+    }
+    if (selectedProduct.pricePerDay) {
+      return selectedProduct.pricePerDay;
+    }
+    if (selectedProduct.pricePerHour) {
+      return selectedProduct.pricePerHour;
+    }
+    return 0;
+  };
+
+  // Get price unit
+  const getPriceUnit = () => {
+    if (selectedProduct.isForSaleOnly && selectedProduct.askingPrice) {
+      return "";
+    }
+    if (selectedProduct.pricePerDay) {
+      return "day";
+    }
+    if (selectedProduct.pricePerHour) {
+      return "hour";
+    }
+    return "";
+  };
+
+  // Get product status
+  const isAvailable =
+    selectedProduct.isAvailable &&
+    !selectedProduct.isRented &&
+    !selectedProduct.isOnHold;
 
   return (
     <>
@@ -56,33 +103,43 @@ export default function ProductDetailScreen() {
       >
         {/* Image Gallery */}
         <View className="relative">
-          <ScrollView
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            onMomentumScrollEnd={(e) => {
-              const page = Math.round(
-                e.nativeEvent.contentOffset.x /
-                  e.nativeEvent.layoutMeasurement.width,
-              );
-              setSelectedImage(page);
-            }}
-            className="bg-gray-50"
-          >
-            {selectedProduct.images.map((image, index) => (
-              <TouchableOpacity
-                key={index}
-                activeOpacity={0.9}
-                onPress={() => setShowFullImage(true)}
-              >
-                <Image
-                  source={{ uri: image }}
-                  style={{ width, height: 400 }}
-                  resizeMode="cover"
-                />
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+          {productImages.length > 0 ? (
+            <ScrollView
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              onMomentumScrollEnd={(e) => {
+                const page = Math.round(
+                  e.nativeEvent.contentOffset.x /
+                    e.nativeEvent.layoutMeasurement.width,
+                );
+                setSelectedImage(page);
+              }}
+              className="bg-gray-50"
+            >
+              {productImages.map((image, index) => (
+                <TouchableOpacity
+                  key={index}
+                  activeOpacity={0.9}
+                  onPress={() => setShowFullImage(true)}
+                >
+                  <Image
+                    source={{ uri: image }}
+                    style={{ width, height: 400 }}
+                    resizeMode="cover"
+                  />
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          ) : (
+            <View
+              style={{ width, height: 400 }}
+              className="bg-gray-100 items-center justify-center"
+            >
+              <Ionicons name="image-outline" size={48} color="#9CA3AF" />
+              <Text className="text-gray-400 mt-2">No image available</Text>
+            </View>
+          )}
 
           {/* Gradient Overlay */}
           <LinearGradient
@@ -91,16 +148,18 @@ export default function ProductDetailScreen() {
           />
 
           {/* Image Indicators */}
-          <View className="absolute bottom-4 left-0 right-0 flex-row justify-center">
-            {selectedProduct.images.map((_, index) => (
-              <View
-                key={index}
-                className={`w-2 h-2 rounded-full mx-1 ${
-                  selectedImage === index ? "bg-white" : "bg-white/50"
-                }`}
-              />
-            ))}
-          </View>
+          {productImages.length > 1 && (
+            <View className="absolute bottom-4 left-0 right-0 flex-row justify-center">
+              {productImages.map((_, index) => (
+                <View
+                  key={index}
+                  className={`w-2 h-2 rounded-full mx-1 ${
+                    selectedImage === index ? "bg-white" : "bg-white/50"
+                  }`}
+                />
+              ))}
+            </View>
+          )}
 
           {/* Back Button */}
           <TouchableOpacity
@@ -135,21 +194,6 @@ export default function ProductDetailScreen() {
               color={isFavorite ? "#EF4444" : "#374151"}
             />
           </TouchableOpacity>
-
-          {/* Share Button */}
-          <TouchableOpacity
-            onPress={() => {}}
-            className="absolute top-12 right-16 bg-white/90 rounded-full p-2"
-            style={{
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.1,
-              shadowRadius: 4,
-              elevation: 3,
-            }}
-          >
-            <Ionicons name="share-outline" size={22} color="#374151" />
-          </TouchableOpacity>
         </View>
 
         {/* Product Info Section */}
@@ -158,7 +202,7 @@ export default function ProductDetailScreen() {
           <View className="flex-row justify-between items-start">
             <View className="flex-1 pr-4">
               <Text className="text-2xl font-bold text-gray-900 mb-1">
-                {selectedProduct.title}
+                {selectedProduct.name}
               </Text>
               <View className="flex-row items-center">
                 <View className="flex-row items-center bg-green-50 px-2 py-1 rounded-full">
@@ -174,11 +218,13 @@ export default function ProductDetailScreen() {
             </View>
             <View className="bg-green-500 px-4 py-3 rounded-2xl">
               <Text className="text-white text-2xl font-bold">
-                ৳{selectedProduct.price}
+                ৳{getDisplayPrice()}
               </Text>
-              <Text className="text-green-100 text-xs text-right">
-                per {selectedProduct.priceUnit}
-              </Text>
+              {getPriceUnit() && (
+                <Text className="text-green-100 text-xs text-right">
+                  per {getPriceUnit()}
+                </Text>
+              )}
             </View>
           </View>
 
@@ -187,30 +233,26 @@ export default function ProductDetailScreen() {
             <View className="flex-row items-center flex-1">
               <Ionicons name="location-outline" size={18} color="#10B981" />
               <Text className="text-gray-600 ml-1">
-                {selectedProduct.location}
+                {selectedProduct.location || "Dhaka, Bangladesh"}
               </Text>
             </View>
             <View
               className={`px-3 py-1 rounded-full ${
-                selectedProduct.available ? "bg-green-100" : "bg-red-100"
+                isAvailable ? "bg-green-100" : "bg-red-100"
               }`}
             >
               <View className="flex-row items-center">
                 <View
                   className={`w-2 h-2 rounded-full mr-2 ${
-                    selectedProduct.available ? "bg-green-500" : "bg-red-500"
+                    isAvailable ? "bg-green-500" : "bg-red-500"
                   }`}
                 />
                 <Text
                   className={`text-sm font-medium ${
-                    selectedProduct.available
-                      ? "text-green-700"
-                      : "text-red-700"
+                    isAvailable ? "text-green-700" : "text-red-700"
                   }`}
                 >
-                  {selectedProduct.available
-                    ? "Available Now"
-                    : "Currently Rented"}
+                  {isAvailable ? "Available Now" : "Currently Rented"}
                 </Text>
               </View>
             </View>
@@ -242,36 +284,49 @@ export default function ProductDetailScreen() {
           </View>
 
           {/* Owner Info */}
-          <View className="mt-6">
-            <Text className="text-lg font-semibold text-gray-900 mb-3">
-              Hosted by
-            </Text>
-            <View className="flex-row items-center bg-green-50 rounded-2xl p-4">
-              <Image
-                source={{ uri: selectedProduct.owner.avatar }}
-                className="w-16 h-16 rounded-full border-2 border-white"
-              />
-              <View className="ml-4 flex-1">
-                <Text className="text-lg font-bold text-gray-900">
-                  {selectedProduct.owner.name}
-                </Text>
-                <View className="flex-row items-center mt-1">
-                  <View className="flex-row items-center bg-white px-2 py-1 rounded-full">
-                    <Ionicons name="star" size={14} color="#F59E0B" />
-                    <Text className="text-green-600 font-medium ml-1">
-                      {selectedProduct.owner.rating}
+          {owner && (
+            <View className="mt-6">
+              <Text className="text-lg font-semibold text-gray-900 mb-3">
+                Hosted by
+              </Text>
+              <View className="flex-row items-center bg-green-50 rounded-2xl p-4">
+                <Image
+                  source={{
+                    uri: owner.selfie || "https://via.placeholder.com/64",
+                  }}
+                  className="w-16 h-16 rounded-full border-2 border-white"
+                />
+                <View className="ml-4 flex-1">
+                  <Text className="text-lg font-bold text-gray-900">
+                    {owner.name}
+                  </Text>
+                  <View className="flex-row items-center mt-1">
+                    <View className="flex-row items-center bg-white px-2 py-1 rounded-full">
+                      <Ionicons name="star" size={14} color="#F59E0B" />
+                      <Text className="text-green-600 font-medium ml-1">
+                        {owner.securityScore === "VERY_HIGH"
+                          ? "5.0"
+                          : owner.securityScore === "HIGH"
+                            ? "4.5"
+                            : "4.0"}
+                      </Text>
+                    </View>
+                    <Text className="text-gray-500 text-sm ml-2">
+                      {products.filter((p) => p.ownerId === owner.id).length}{" "}
+                      items listed
                     </Text>
                   </View>
-                  <Text className="text-gray-500 text-sm ml-2">
-                    24 items listed
-                  </Text>
                 </View>
+                <TouchableOpacity className="bg-white p-3 rounded-full border border-green-200">
+                  <Ionicons
+                    name="chatbubble-outline"
+                    size={22}
+                    color="#10B981"
+                  />
+                </TouchableOpacity>
               </View>
-              <TouchableOpacity className="bg-white p-3 rounded-full border border-green-200">
-                <Ionicons name="chatbubble-outline" size={22} color="#10B981" />
-              </TouchableOpacity>
             </View>
-          </View>
+          )}
 
           {/* Description */}
           <View className="mt-6">
@@ -279,40 +334,36 @@ export default function ProductDetailScreen() {
               Description
             </Text>
             <Text className="text-gray-600 leading-6">
-              {selectedProduct.description}
+              {selectedProduct.productDescription}
             </Text>
           </View>
 
           {/* Specifications */}
-          {selectedProduct.specs && (
-            <View className="mt-6">
-              <Text className="text-lg font-semibold text-gray-900 mb-3">
-                Specifications
-              </Text>
-              <View className="bg-gray-50 rounded-2xl overflow-hidden">
-                {Object.entries(selectedProduct.specs).map(
-                  ([key, value], index) => (
-                    <View
-                      key={key}
-                      className={`flex-row py-3 px-4 ${
-                        index !==
-                        Object.entries(selectedProduct.specs!).length - 1
-                          ? "border-b border-gray-200"
-                          : ""
-                      }`}
-                    >
-                      <Text className="w-24 text-gray-500 capitalize">
-                        {key}:
-                      </Text>
-                      <Text className="flex-1 text-gray-900 font-medium">
-                        {value}
-                      </Text>
-                    </View>
-                  ),
-                )}
+          <View className="mt-6">
+            <Text className="text-lg font-semibold text-gray-900 mb-3">
+              Specifications
+            </Text>
+            <View className="bg-gray-50 rounded-2xl overflow-hidden">
+              <View className="flex-row py-3 px-4 border-b border-gray-200">
+                <Text className="w-24 text-gray-500">Condition:</Text>
+                <Text className="flex-1 text-gray-900 font-medium">
+                  {selectedProduct.productCondition?.replace("_", " ")}
+                </Text>
+              </View>
+              <View className="flex-row py-3 px-4 border-b border-gray-200">
+                <Text className="w-24 text-gray-500">Type:</Text>
+                <Text className="flex-1 text-gray-900 font-medium">
+                  {selectedProduct.productType?.replace("_", " ")}
+                </Text>
+              </View>
+              <View className="flex-row py-3 px-4">
+                <Text className="w-24 text-gray-500">Age:</Text>
+                <Text className="flex-1 text-gray-900 font-medium">
+                  {selectedProduct.productAge} months
+                </Text>
               </View>
             </View>
-          )}
+          </View>
 
           {/* Reviews Section */}
           <View className="mt-6">
@@ -356,7 +407,11 @@ export default function ProductDetailScreen() {
                   >
                     <View className="flex-row items-center mb-3">
                       <Image
-                        source={{ uri: review.userAvatar }}
+                        source={{
+                          uri:
+                            review.userAvatar ||
+                            "https://via.placeholder.com/40",
+                        }}
                         className="w-10 h-10 rounded-full"
                       />
                       <View className="ml-3 flex-1">
@@ -379,7 +434,7 @@ export default function ProductDetailScreen() {
                         </View>
                       </View>
                       <Text className="text-gray-400 text-xs">
-                        {review.date}
+                        {new Date(review.date).toLocaleDateString()}
                       </Text>
                     </View>
                     <Text className="text-gray-600 leading-5">
@@ -406,42 +461,6 @@ export default function ProductDetailScreen() {
               </View>
             )}
           </View>
-
-          {/* Similar Items Section */}
-          <View className="mt-8">
-            <Text className="text-lg font-semibold text-gray-900 mb-4">
-              You might also like
-            </Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              className="-mx-2"
-            >
-              {[1, 2, 3].map((item) => (
-                <TouchableOpacity
-                  key={item}
-                  className="w-48 mx-2 bg-gray-50 rounded-2xl overflow-hidden"
-                >
-                  <Image
-                    source={{ uri: "https://via.placeholder.com/200" }}
-                    className="w-full h-32"
-                  />
-                  <View className="p-3">
-                    <Text className="font-semibold text-gray-900">
-                      Similar Item
-                    </Text>
-                    <View className="flex-row items-center mt-1">
-                      <Ionicons name="star" size={14} color="#F59E0B" />
-                      <Text className="text-green-600 ml-1">4.8</Text>
-                    </View>
-                    <Text className="text-green-600 font-bold mt-2">
-                      $25/day
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
         </View>
       </ScrollView>
 
@@ -451,31 +470,29 @@ export default function ProductDetailScreen() {
           <View className="flex-1">
             <Text className="text-xs text-gray-500">Total (3 days)</Text>
             <Text className="text-xl font-bold text-gray-900">
-              ${selectedProduct.price * 3}
+              ৳{getDisplayPrice() * 3}
             </Text>
           </View>
           <TouchableOpacity
             onPress={() =>
-              selectedProduct.available &&
+              isAvailable &&
               router.push(`/product/booking/${selectedProduct.id}`)
             }
             className={`flex-1 py-3 rounded-xl ${
-              selectedProduct.available ? "bg-green-500" : "bg-gray-300"
+              isAvailable ? "bg-green-500" : "bg-gray-300"
             }`}
-            disabled={!selectedProduct.available}
+            disabled={!isAvailable}
           >
             <LinearGradient
               colors={
-                selectedProduct.available
-                  ? ["#22c55e", "#15803d"]
-                  : ["#9CA3AF", "#6B7280"]
+                isAvailable ? ["#22c55e", "#15803d"] : ["#9CA3AF", "#6B7280"]
               }
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               className="absolute inset-0 rounded-xl"
             />
             <Text className="text-white font-semibold text-center">
-              {selectedProduct.available ? "Book Now" : "Not Available"}
+              {isAvailable ? "Book Now" : "Not Available"}
             </Text>
           </TouchableOpacity>
         </View>
@@ -491,21 +508,23 @@ export default function ProductDetailScreen() {
             <Ionicons name="close" size={24} color="white" />
           </TouchableOpacity>
 
-          <ScrollView
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            className="flex-1"
-          >
-            {selectedProduct.images.map((image, index) => (
-              <Image
-                key={index}
-                source={{ uri: image }}
-                style={{ width, height: Dimensions.get("window").height }}
-                resizeMode="contain"
-              />
-            ))}
-          </ScrollView>
+          {productImages.length > 0 && (
+            <ScrollView
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              className="flex-1"
+            >
+              {productImages.map((image, index) => (
+                <Image
+                  key={index}
+                  source={{ uri: image }}
+                  style={{ width, height: Dimensions.get("window").height }}
+                  resizeMode="contain"
+                />
+              ))}
+            </ScrollView>
+          )}
         </View>
       </Modal>
     </>

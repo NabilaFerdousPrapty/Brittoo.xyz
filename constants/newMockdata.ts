@@ -1,4 +1,5 @@
 // mockData.ts
+import "react-native-get-random-values";
 import { v4 as uuidv4 } from "uuid";
 import {
   BccStatus,
@@ -33,6 +34,20 @@ import {
   WithdrawalRequest,
   WithdrawalStatus,
 } from "../types/brittoo.types";
+
+// ============================================
+// HELPER FUNCTIONS
+// ============================================
+
+const getRandomDate = (startDaysAgo: number, endDaysAgo: number = 0): Date => {
+  const start = Date.now() - startDaysAgo * 86400000;
+  const end = Date.now() - endDaysAgo * 86400000;
+  return new Date(start + Math.random() * (end - start));
+};
+
+const getRandomImageUrl = (id: string, index: number): string => {
+  return `https://api.brittoo.com/uploads/products/${id}-${index}.jpg`;
+};
 
 // ============================================
 // USERS (50)
@@ -99,10 +114,7 @@ export const mockUsers: User[] = Array.from({ length: 50 }, (_, i) => {
     otp: i % 10 === 0 ? "123456" : undefined,
     otpExpiry: i % 10 === 0 ? new Date(Date.now() + 300000) : undefined,
     otpSentCount: Math.floor(Math.random() * 5),
-    lastOtpSentDate:
-      i % 10 === 0
-        ? new Date(Date.now() - Math.random() * 86400000)
-        : undefined,
+    lastOtpSentDate: i % 10 === 0 ? getRandomDate(30, 1) : undefined,
     securityScore: securityScores[i % 5],
     isSuspended: i % 20 === 0,
     suspensionCount: i % 20 === 0 ? Math.floor(Math.random() * 3) + 1 : 0,
@@ -110,7 +122,7 @@ export const mockUsers: User[] = Array.from({ length: 50 }, (_, i) => {
       i % 20 === 0
         ? ["Violation of community guidelines", "Spam activity"]
         : [],
-    createdAt: new Date(Date.now() - Math.random() * 365 * 86400000),
+    createdAt: getRandomDate(365, 30),
     updatedAt: new Date(),
     deletedAt: i % 50 === 0 ? new Date() : undefined,
     isValidRuetMail: true,
@@ -129,7 +141,8 @@ export const mockPasswordResetTokens: PasswordResetToken[] = Array.from(
     userId: mockUsers[i % mockUsers.length].id,
     used: i % 5 === 0,
     expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-    createdAt: new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000),
+    createdAt: getRandomDate(30, 1),
+    user: mockUsers[i % mockUsers.length],
   }),
 );
 
@@ -187,8 +200,9 @@ export const mockProducts: Product[] = Array.from({ length: 50 }, (_, i) => {
   const ownerId = mockUsers[i % mockUsers.length].id;
   const isForSaleOnly = i % 3 === 0;
   const hasHourlyRental = i % 4 === 0;
+  const imageCount = Math.floor(Math.random() * 5) + 1;
 
-  return {
+  const product: Product = {
     id,
     productSlNo: i + 1,
     productSL: `PRD-${String(i + 1).padStart(5, "0")}`,
@@ -199,12 +213,11 @@ export const mockProducts: Product[] = Array.from({ length: 50 }, (_, i) => {
     pricePerHour: hasHourlyRental
       ? Math.floor(Math.random() * 100) + 10
       : undefined,
-    productImages: Array.from(
-      { length: Math.floor(Math.random() * 5) + 1 },
-      (_, idx) => `https://api.brittoo.com/uploads/products/${id}-${idx}.jpg`,
+    productImages: Array.from({ length: imageCount }, (_, idx) =>
+      getRandomImageUrl(id, idx),
     ),
     optimizedImages: Array.from(
-      { length: Math.floor(Math.random() * 5) + 1 },
+      { length: imageCount },
       (_, idx) =>
         `https://api.brittoo.com/uploads/products/optimized/${id}-${idx}.webp`,
     ),
@@ -239,10 +252,20 @@ export const mockProducts: Product[] = Array.from({ length: 50 }, (_, i) => {
     virtualType: i % 20 === 0 ? "digital_product" : undefined,
     latitude: 24.9045 + (Math.random() - 0.5) * 0.1,
     longitude: 91.8687 + (Math.random() - 0.5) * 0.1,
-    createdAt: new Date(Date.now() - Math.random() * 180 * 86400000),
+    createdAt: getRandomDate(180, 30),
     updatedAt: new Date(),
     deletedAt: i % 50 === 0 ? new Date() : undefined,
+    // Relations (will be populated by service layer)
+    owner: mockUsers.find((u) => u.id === ownerId),
+    redCacheCredits: undefined,
+    rentalRequests: undefined,
+    renters: undefined,
+    chatRooms: undefined,
+    purchaseRequests: undefined,
+    reviews: [],
   };
+
+  return product;
 });
 
 // ============================================
@@ -255,9 +278,13 @@ export const mockBccWallets: BccWallet[] = mockUsers.map((user, i) => ({
   availableBalance: Math.floor(Math.random() * 10000) + 100,
   lockedBalance: Math.floor(Math.random() * 1000),
   requestedForWithdrawal: Math.floor(Math.random() * 500),
-  createdAt: new Date(Date.now() - Math.random() * 365 * 86400000),
+  createdAt: getRandomDate(365, 30),
   updatedAt: new Date(),
   deletedAt: i % 50 === 0 ? new Date() : undefined,
+  user,
+  bccTransactions: undefined,
+  rentalRequests: undefined,
+  withdrawalRequests: undefined,
 }));
 
 // ============================================
@@ -305,9 +332,13 @@ export const mockBccTransactions: BccTransaction[] = Array.from(
       transactionType: transactionTypes[i % transactionTypes.length],
       status: bccStatuses[i % bccStatuses.length],
       rejectReason: i % 10 === 0 ? "Invalid transaction details" : undefined,
-      createdAt: new Date(Date.now() - Math.random() * 90 * 86400000),
+      createdAt: getRandomDate(90, 1),
       updatedAt: new Date(),
       deletedAt: i % 50 === 0 ? new Date() : undefined,
+      rentalRequest: undefined,
+      user: mockUsers.find((u) => u.id === userId),
+      wallet,
+      withdrawalRequest: undefined, // Fixed: changed from WithdrawalRequest to withdrawalRequest
     };
   },
 );
@@ -341,9 +372,15 @@ export const mockWithdrawalRequests: WithdrawalRequest[] = Array.from(
       phoneNumber: `017${String(10000000 + i).slice(-8)}`,
       status: withdrawalStatuses[i % withdrawalStatuses.length],
       rejectReason: i % 10 === 2 ? "Insufficient balance" : undefined,
-      createdAt: new Date(Date.now() - Math.random() * 60 * 86400000),
+      createdAt: getRandomDate(60, 1),
       updatedAt: new Date(),
       deletedAt: i % 50 === 0 ? new Date() : undefined,
+      bccTransaction:
+        i % 2 === 0
+          ? mockBccTransactions[i % mockBccTransactions.length]
+          : undefined,
+      user: mockUsers.find((u) => u.id === userId),
+      wallet,
     };
   },
 );
@@ -380,9 +417,12 @@ export const mockRedCacheCredits: RedCacheCredit[] = Array.from(
           : i % 7 === 1
             ? "Festival offer"
             : "Loyalty reward",
-      createdAt: new Date(Date.now() - Math.random() * 180 * 86400000),
+      createdAt: getRandomDate(180, 30),
       updatedAt: new Date(),
       deletedAt: i % 50 === 0 ? new Date() : undefined,
+      sourceProduct,
+      user: mockUsers.find((u) => u.id === userId),
+      rentalRequestUsages: undefined,
     };
   },
 );
@@ -491,9 +531,16 @@ export const mockRentalRequests: RentalRequest[] = Array.from(
       usedBccAmount:
         i % 3 === 0 ? Math.floor(Math.random() * 500) + 100 : undefined,
       rccProductSubmitted: i % 5 === 0 && i % 10 !== 0,
-      createdAt: new Date(Date.now() - Math.random() * 60 * 86400000),
+      createdAt: getRandomDate(60, 1),
       updatedAt: new Date(),
       deletedAt: i % 50 === 0 ? new Date() : undefined,
+      bccTransactions: undefined,
+      rccUsageDetails: undefined,
+      bccWallet: wallet,
+      owner,
+      product,
+      requester,
+      coupon: undefined,
     };
   },
 );
@@ -513,8 +560,10 @@ export const mockRentalRequestRccUsage: RentalRequestRccUsage[] = Array.from(
       rentalRequestId: rentalRequest.id,
       redCacheCreditId: redCacheCredit.id,
       usedAmount: Math.floor(Math.random() * 500) + 50,
-      createdAt: new Date(Date.now() - Math.random() * 60 * 86400000),
+      createdAt: getRandomDate(60, 1),
       updatedAt: new Date(),
+      redCacheCredit,
+      rentalRequest,
     };
   },
 );
@@ -578,9 +627,12 @@ export const mockPurchaseRequests: PurchaseRequest[] = Array.from(
         i % 3 === 1
           ? brittoTerminals[(i + 1) % brittoTerminals.length]
           : undefined,
-      createdAt: new Date(Date.now() - Math.random() * 60 * 86400000),
+      createdAt: getRandomDate(60, 1),
       updatedAt: new Date(),
       deletedAt: i % 50 === 0 ? new Date() : undefined,
+      seller,
+      product,
+      buyer,
     };
   },
 );
@@ -589,30 +641,29 @@ export const mockPurchaseRequests: PurchaseRequest[] = Array.from(
 // COUPONS (50)
 // ============================================
 
-export const mockCoupons: Coupon[] = Array.from({ length: 50 }, (_, i) => {
-  const couponCodes = [
-    "WELCOME10",
-    "SAVE20",
-    "RENT15",
-    "BRITTOO25",
-    "STUDENT30",
-    "FIRSTRENT",
-    "REFER50",
-    "FESTIVE40",
-    "FLASH35",
-    "EXCLUSIVE45",
-  ];
+const couponCodes = [
+  "WELCOME10",
+  "SAVE20",
+  "RENT15",
+  "BRITTOO25",
+  "STUDENT30",
+  "FIRSTRENT",
+  "REFER50",
+  "FESTIVE40",
+  "FLASH35",
+  "EXCLUSIVE45",
+];
 
-  return {
-    id: uuidv4(),
-    code: `${couponCodes[i % couponCodes.length]}${Math.floor(i / 10) + 1}`,
-    discount: Math.floor(Math.random() * 50) + 5,
-    expiresAt: new Date(Date.now() + Math.random() * 180 * 86400000),
-    isActive: i % 8 !== 0,
-    createdAt: new Date(Date.now() - Math.random() * 90 * 86400000),
-    updatedAt: new Date(),
-  };
-});
+export const mockCoupons: Coupon[] = Array.from({ length: 50 }, (_, i) => ({
+  id: uuidv4(),
+  code: `${couponCodes[i % couponCodes.length]}${Math.floor(i / 10) + 1}`,
+  discount: Math.floor(Math.random() * 50) + 5,
+  expiresAt: new Date(Date.now() + Math.random() * 180 * 86400000),
+  isActive: i % 8 !== 0,
+  createdAt: getRandomDate(90, 30),
+  updatedAt: new Date(),
+  rentalRequests: undefined,
+}));
 
 // ============================================
 // CHAT ROOMS (50)
@@ -630,8 +681,12 @@ export const mockChatRooms: ChatRoom[] = Array.from({ length: 50 }, (_, i) => {
     buyerId: buyer.id,
     sellerId: seller.id,
     isActive: i % 10 !== 0,
-    createdAt: new Date(Date.now() - Math.random() * 90 * 86400000),
+    createdAt: getRandomDate(90, 30),
     updatedAt: new Date(),
+    product,
+    buyer,
+    seller,
+    messages: undefined,
   };
 });
 
@@ -670,7 +725,9 @@ export const mockMessages: Message[] = Array.from({ length: 50 }, (_, i) => {
     senderId: sender.id,
     content: messageContents[i % messageContents.length],
     isRead: i % 3 !== 0,
-    createdAt: new Date(Date.now() - Math.random() * 30 * 86400000),
+    createdAt: getRandomDate(30, 1),
+    chatRoom,
+    sender,
   };
 });
 
@@ -712,7 +769,8 @@ export const mockUserNotifications: UserNotification[] = Array.from(
         id: uuidv4(),
       },
       isRead: i % 4 !== 0,
-      createdAt: new Date(Date.now() - Math.random() * 30 * 86400000),
+      createdAt: getRandomDate(30, 1),
+      user,
     };
   },
 );
@@ -734,8 +792,9 @@ export const mockPushSubscriptions: PushSubscription[] = Array.from(
         p256dh: `BIPM2cJXjJ3f${i}V7k5QZ8yL3pR9tW6nX1sK4mO7aE2bC0dF5gH8jK1lN4qR7tY0`,
         auth: `qR7tY0uI3oP5aE2bC0dF5gH8jK1lN4qR7tY0uI3oP5aE2b`,
       },
-      createdAt: new Date(Date.now() - Math.random() * 180 * 86400000),
+      createdAt: getRandomDate(180, 30),
       updatedAt: new Date(),
+      user,
     };
   },
 );
@@ -757,7 +816,7 @@ export const mockSentNotifications: SentNotification[] = Array.from(
       title: `System Notification ${i + 1}`,
       body: `This is a broadcast notification about important updates to the Brittoo platform. Please check your dashboard for details.`,
       targets: i % 4 === 0 ? "all" : targetUsers.join(","),
-      createdAt: new Date(Date.now() - Math.random() * 60 * 86400000),
+      createdAt: getRandomDate(60, 1),
     };
   },
 );
@@ -766,22 +825,23 @@ export const mockSentNotifications: SentNotification[] = Array.from(
 // REVIEWS (50)
 // ============================================
 
+const ratings = [1, 2, 3, 4, 5];
+const comments = [
+  "Excellent product, highly recommend!",
+  "Good quality, worth the price.",
+  "Average product, nothing special.",
+  "Not as described, disappointed.",
+  "Perfect condition, great seller!",
+  "Fast delivery, product is awesome.",
+  "Would buy again from this seller.",
+  "Product arrived early, very satisfied.",
+  "Some minor issues but overall good.",
+  "Best purchase ever!",
+];
+
 export const mockReviews: Review[] = Array.from({ length: 50 }, (_, i) => {
   const product = mockProducts[i % mockProducts.length];
   const user = mockUsers[(i + 5) % mockUsers.length];
-  const ratings = [1, 2, 3, 4, 5];
-  const comments = [
-    "Excellent product, highly recommend!",
-    "Good quality, worth the price.",
-    "Average product, nothing special.",
-    "Not as described, disappointed.",
-    "Perfect condition, great seller!",
-    "Fast delivery, product is awesome.",
-    "Would buy again from this seller.",
-    "Product arrived early, very satisfied.",
-    "Some minor issues but overall good.",
-    "Best purchase ever!",
-  ];
 
   return {
     id: uuidv4(),
@@ -791,7 +851,7 @@ export const mockReviews: Review[] = Array.from({ length: 50 }, (_, i) => {
     userAvatar: user.selfie,
     rating: ratings[i % ratings.length],
     comment: comments[i % comments.length],
-    date: new Date(Date.now() - Math.random() * 90 * 86400000).toISOString(),
+    date: getRandomDate(90, 1).toISOString(),
   };
 });
 
@@ -855,6 +915,56 @@ export const getAverageRating = (productId: string): number => {
   const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
   return sum / reviews.length;
 };
+
+// Populate relations for products
+export const populateProductRelations = (): void => {
+  mockProducts.forEach((product) => {
+    product.owner = getMockUserById(product.ownerId);
+    product.reviews = getMockReviewsByProduct(product.id);
+    product.rentalRequests = mockRentalRequests.filter(
+      (r) => r.productId === product.id,
+    );
+    product.chatRooms = mockChatRooms.filter((c) => c.productId === product.id);
+    product.purchaseRequests = mockPurchaseRequests.filter(
+      (p) => p.productId === product.id,
+    );
+  });
+};
+
+// Populate relations for users
+export const populateUserRelations = (): void => {
+  mockUsers.forEach((user) => {
+    user.rentedOutProducts = getMockProductsByOwner(user.id);
+    user.borrowedProducts = mockRentalRequests
+      .filter(
+        (r) =>
+          r.requesterId === user.id &&
+          r.status === RentalRequestStatus.PRODUCT_COLLECTED_BY_RENTER,
+      )
+      .map((r) => getMockProductById(r.productId))
+      .filter((p): p is Product => p !== undefined);
+    user.bccWallet = getMockWalletByUser(user.id);
+    user.rentalRequestsMade = mockRentalRequests.filter(
+      (r) => r.requesterId === user.id,
+    );
+    user.rentalRequestsReceived = mockRentalRequests.filter(
+      (r) => r.ownerId === user.id,
+    );
+    user.purchaseRequestsMade = mockPurchaseRequests.filter(
+      (p) => p.buyerId === user.id,
+    );
+    user.purchaseRequestsReceived = mockPurchaseRequests.filter(
+      (p) => p.sellerId === user.id,
+    );
+    user.buyerChats = mockChatRooms.filter((c) => c.buyerId === user.id);
+    user.sellerChats = mockChatRooms.filter((c) => c.sellerId === user.id);
+    user.userNotifications = getMockNotificationsByUser(user.id);
+  });
+};
+
+// Initialize all relations
+populateProductRelations();
+populateUserRelations();
 
 // ============================================
 // AGGREGATED DATA EXPORTS

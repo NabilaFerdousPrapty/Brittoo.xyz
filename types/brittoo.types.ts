@@ -1,3 +1,5 @@
+// types/brittoo.types.ts
+
 // ============================================
 // ENUMS
 // ============================================
@@ -213,7 +215,7 @@ export interface BccTransaction {
   rentalRequest?: RentalRequest;
   user?: User;
   wallet?: BccWallet;
-  WithdrawalRequest?: WithdrawalRequest;
+  withdrawalRequest?: WithdrawalRequest; // Fixed: changed from WithdrawalRequest
 }
 
 export interface WithdrawalRequest {
@@ -259,6 +261,7 @@ export interface RedCacheCredit {
 }
 
 export interface Product {
+  reviews: Review[];
   id: string;
   productSlNo: number;
   productSL: string;

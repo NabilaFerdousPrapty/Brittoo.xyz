@@ -1,70 +1,104 @@
+// store/useAuthStore.ts
 import { create } from "zustand";
-import { AuthState, User } from "../types/product.types";
+import { mockDataService } from "../services/mockDataService";
+import { User } from "../types/brittoo.types";
 
-interface AuthStore extends AuthState {
+interface AuthState {
+  user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  error: string | null;
+
   login: (email: string, password: string) => Promise<boolean>;
-  signup: (name: string, email: string, password: string) => Promise<boolean>;
-  logout: () => void;
-  setUser: (user: User | null) => void;
+  logout: () => Promise<void>;
+  register: (userData: Partial<User>) => Promise<boolean>;
+  clearError: () => void;
 }
 
-export const useAuthStore = create<AuthStore>((set) => ({
+export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isAuthenticated: false,
   isLoading: false,
+  error: null,
 
   login: async (email: string, password: string) => {
-    set({ isLoading: true });
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+    set({ isLoading: true, error: null });
 
-      if (email === "prapty@gmail.com" && password === "123456") {
-        const user: User = {
-          id: "1",
-          name: "Demo User",
-          email: "prapty@gmail.com",
-          avatar: "https://i.pravatar.cc/150?u=demo",
-          rating: 4.5,
-          memberSince: "2024-01-01",
-        };
-        set({ user, isAuthenticated: true, isLoading: false });
+    try {
+      const response = await mockDataService.login(email, password);
+
+      if (response.success && response.data) {
+        set({
+          user: response.data.user,
+          isAuthenticated: true,
+          isLoading: false,
+          error: null,
+        });
         return true;
+      } else {
+        set({
+          isLoading: false,
+          error: response.error || "Login failed",
+        });
+        return false;
       }
-      set({ isLoading: false });
-      return false;
     } catch (error) {
-      set({ isLoading: false });
+      set({
+        isLoading: false,
+        error: "An unexpected error occurred",
+      });
       return false;
     }
   },
 
-  signup: async (name: string, email: string, password: string) => {
+  logout: async () => {
     set({ isLoading: true });
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      // Mock signup
-      const user: User = {
-        id: Date.now().toString(),
-        name,
-        email,
-        avatar: "https://i.pravatar.cc/150?u=" + Date.now(),
-        rating: 0,
-        memberSince: new Date().toISOString().split("T")[0],
-      };
-      set({ user, isAuthenticated: true, isLoading: false });
-      return true;
+    try {
+      await mockDataService.logout();
+      set({
+        user: null,
+        isAuthenticated: false,
+        isLoading: false,
+        error: null,
+      });
     } catch (error) {
-      set({ isLoading: false });
+      set({
+        isLoading: false,
+        error: "Logout failed",
+      });
+    }
+  },
+
+  register: async (userData: Partial<User>) => {
+    set({ isLoading: true, error: null });
+
+    try {
+      const response = await mockDataService.register(userData);
+
+      if (response.success && response.data) {
+        set({
+          user: response.data.user,
+          isAuthenticated: true,
+          isLoading: false,
+          error: null,
+        });
+        return true;
+      } else {
+        set({
+          isLoading: false,
+          error: response.error || "Registration failed",
+        });
+        return false;
+      }
+    } catch (error) {
+      set({
+        isLoading: false,
+        error: "An unexpected error occurred",
+      });
       return false;
     }
   },
 
-  logout: () => {
-    set({ user: null, isAuthenticated: false });
-  },
-
-  setUser: (user) => set({ user, isAuthenticated: !!user }),
+  clearError: () => set({ error: null }),
 }));
