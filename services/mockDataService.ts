@@ -62,28 +62,82 @@ class MockDataService {
     await this.loadStoredSession();
   }
 
+  // services/mockDataService.ts
+
+  private async saveSession(user: User, token: string) {
+    try {
+      // Create a serializable version of the user
+      const serializableUser = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        roll: user.roll,
+        password: user.password,
+        phoneNumber: user.phoneNumber,
+        selfie: user.selfie,
+        idCardFront: user.idCardFront,
+        idCardBack: user.idCardBack,
+        ipAddress: user.ipAddress,
+        latitude: user.latitude,
+        longitude: user.longitude,
+        role: user.role,
+        emailVerified: user.emailVerified,
+        isVerified: user.isVerified,
+        brittooVerified: user.brittooVerified,
+        otp: user.otp,
+        otpExpiry: user.otpExpiry?.toISOString(), // Convert Date to string
+        otpSentCount: user.otpSentCount,
+        lastOtpSentDate: user.lastOtpSentDate?.toISOString(),
+        securityScore: user.securityScore,
+        isSuspended: user.isSuspended,
+        suspensionCount: user.suspensionCount,
+        suspensionReasons: user.suspensionReasons,
+        createdAt: user.createdAt.toISOString(),
+        updatedAt: user.updatedAt.toISOString(),
+        deletedAt: user.deletedAt?.toISOString(),
+        isValidRuetMail: user.isValidRuetMail,
+      };
+
+      await AsyncStorage.setItem(
+        "currentUser",
+        JSON.stringify(serializableUser),
+      );
+      await AsyncStorage.setItem("authToken", token);
+      this.currentUser = user;
+      this.token = token;
+    } catch (error) {
+      console.error("Failed to save session:", error);
+    }
+  }
+
+  // Also update loadStoredSession to convert dates back
   private async loadStoredSession() {
     try {
       const storedUser = await AsyncStorage.getItem("currentUser");
       const storedToken = await AsyncStorage.getItem("authToken");
 
       if (storedUser && storedToken) {
-        this.currentUser = JSON.parse(storedUser);
+        const parsedUser = JSON.parse(storedUser);
+        // Convert date strings back to Date objects
+        const userWithDates = {
+          ...parsedUser,
+          otpExpiry: parsedUser.otpExpiry
+            ? new Date(parsedUser.otpExpiry)
+            : undefined,
+          lastOtpSentDate: parsedUser.lastOtpSentDate
+            ? new Date(parsedUser.lastOtpSentDate)
+            : undefined,
+          createdAt: new Date(parsedUser.createdAt),
+          updatedAt: new Date(parsedUser.updatedAt),
+          deletedAt: parsedUser.deletedAt
+            ? new Date(parsedUser.deletedAt)
+            : undefined,
+        };
+        this.currentUser = userWithDates;
         this.token = storedToken;
       }
     } catch (error) {
       console.error("Failed to load stored session:", error);
-    }
-  }
-
-  private async saveSession(user: User, token: string) {
-    try {
-      await AsyncStorage.setItem("currentUser", JSON.stringify(user));
-      await AsyncStorage.setItem("authToken", token);
-      this.currentUser = user;
-      this.token = token;
-    } catch (error) {
-      console.error("Failed to save session:", error);
     }
   }
 

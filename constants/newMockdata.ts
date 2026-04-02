@@ -53,6 +53,8 @@ const getRandomImageUrl = (id: string, index: number): string => {
 // USERS (50)
 // ============================================
 
+// constants/mockData.ts - Update the user generation
+
 export const mockUsers: User[] = Array.from({ length: 50 }, (_, i) => {
   const id = uuidv4();
   const roles: Role[] = [Role.USER, Role.ADMIN, Role.MODERATOR];
@@ -88,9 +90,9 @@ export const mockUsers: User[] = Array.from({ length: 50 }, (_, i) => {
   return {
     id,
     name: `${names[i % 10]} ${Math.floor(i / 10) + 1}`,
-    email: `${roll.toLowerCase()}@student.ruet.ac.bd`,
+    email: `${roll.replace("RUET", "").toLowerCase()}@student.ruet.ac.bd`,
     roll,
-    password: "$2b$10$hashed_password_here",
+    password: "password123",
     phoneNumber: `017${String(10000000 + i).slice(-8)}`,
     selfie:
       i % 3 === 0
@@ -116,10 +118,12 @@ export const mockUsers: User[] = Array.from({ length: 50 }, (_, i) => {
     otpSentCount: Math.floor(Math.random() * 5),
     lastOtpSentDate: i % 10 === 0 ? getRandomDate(30, 1) : undefined,
     securityScore: securityScores[i % 5],
-    isSuspended: i % 20 === 0,
-    suspensionCount: i % 20 === 0 ? Math.floor(Math.random() * 3) + 1 : 0,
+    // CHANGE THIS: Make users suspended only if i > 0 and i % 20 === 0
+    isSuspended: i > 0 && i % 20 === 0,
+    suspensionCount:
+      i > 0 && i % 20 === 0 ? Math.floor(Math.random() * 3) + 1 : 0,
     suspensionReasons:
-      i % 20 === 0
+      i > 0 && i % 20 === 0
         ? ["Violation of community guidelines", "Spam activity"]
         : [],
     createdAt: getRandomDate(365, 30),
@@ -128,7 +132,6 @@ export const mockUsers: User[] = Array.from({ length: 50 }, (_, i) => {
     isValidRuetMail: true,
   };
 });
-
 // ============================================
 // PASSWORD RESET TOKENS (50)
 // ============================================
