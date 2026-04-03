@@ -1,24 +1,59 @@
-import { useAuthStore } from "@/store/useAuthStore";
 import { Ionicons } from "@expo/vector-icons";
-import { Tabs } from "expo-router";
-import { View } from "react-native";
+import { Tabs, useRouter, useSegments } from "expo-router";
+import { useEffect } from "react";
+import { ActivityIndicator, View } from "react-native";
+import { useAuthStore } from "../../store/useAuthStore";
 
 export default function TabsLayout() {
-  const { isAuthenticated } = useAuthStore();
+  const segments = useSegments();
+  const router = useRouter();
+  const { isAuthenticated, isLoading } = useAuthStore();
+
+  useEffect(() => {
+    if (isLoading) return;
+
+    const inAuthGroup = segments[0] === "(auth)";
+
+    if (!isAuthenticated && !inAuthGroup) {
+      // Redirect to login if not authenticated
+      router.replace("/(auth)/login");
+    } else if (isAuthenticated && inAuthGroup) {
+      // Redirect to home if already authenticated
+      router.replace("/(tabs)");
+    }
+  }, [isAuthenticated, segments, isLoading]);
+
+  if (isLoading) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <ActivityIndicator size="large" color="#10B981" />
+      </View>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: "#22c55e",
-        tabBarInactiveTintColor: "#6b7280",
+        headerShown: true,
+        tabBarActiveTintColor: "#10B981",
+        tabBarInactiveTintColor: "#9CA3AF",
         tabBarStyle: {
-          backgroundColor: "white",
           borderTopWidth: 1,
-          borderTopColor: "#e5e7eb",
+          borderTopColor: "#E5E7EB",
+          paddingBottom: 5,
+          paddingTop: 5,
           height: 60,
-          paddingBottom: 8,
-          paddingTop: 8,
         },
-        headerShown: false,
+        headerStyle: {
+          backgroundColor: "#ffffff",
+        },
+        headerTitleStyle: {
+          fontWeight: "600",
+        },
       }}
     >
       <Tabs.Screen
@@ -30,7 +65,6 @@ export default function TabsLayout() {
           ),
         }}
       />
-
       <Tabs.Screen
         name="browse"
         options={{
@@ -40,34 +74,15 @@ export default function TabsLayout() {
           ),
         }}
       />
-
       <Tabs.Screen
         name="add-item"
         options={{
-          title: "",
-          tabBarIcon: ({ color, size, focused }) => (
-            <View
-              style={{
-                backgroundColor: "#10B981", // Green color
-                width: 46,
-                height: 46,
-                borderRadius: 28,
-                justifyContent: "center",
-                alignItems: "center",
-                marginBottom: 0, // This lifts the icon above the tab bar
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.25,
-                shadowRadius: 3.84,
-                elevation: 5,
-              }}
-            >
-              <Ionicons name="add" size={30} color="white" />
-            </View>
+          title: "Sell",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="add-circle-outline" size={size} color={color} />
           ),
         }}
       />
-
       <Tabs.Screen
         name="profile"
         options={{
@@ -75,6 +90,63 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person-outline" size={size} color={color} />
           ),
+        }}
+      />
+      {/* Hide these from tab bar but make them accessible */}
+      <Tabs.Screen
+        name="my-listings"
+        options={{
+          href: null,
+          title: "My Listings",
+        }}
+      />
+      <Tabs.Screen
+        name="my-rentals"
+        options={{
+          href: null,
+          title: "My Rentals",
+        }}
+      />
+      <Tabs.Screen
+        name="my-purchases"
+        options={{
+          href: null,
+          title: "My Purchases",
+        }}
+      />
+      <Tabs.Screen
+        name="my-reviews"
+        options={{
+          href: null,
+          title: "My Reviews",
+        }}
+      />
+      <Tabs.Screen
+        name="wallet"
+        options={{
+          href: null,
+          title: "Wallet",
+        }}
+      />
+      <Tabs.Screen
+        name="settings"
+        options={{
+          href: null,
+          title: "Settings",
+        }}
+      />
+      <Tabs.Screen
+        name="support"
+        options={{
+          href: null,
+          title: "Support",
+        }}
+      />
+      <Tabs.Screen
+        name="about"
+        options={{
+          href: null,
+          title: "About",
         }}
       />
     </Tabs>
