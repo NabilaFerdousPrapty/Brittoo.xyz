@@ -1,11 +1,11 @@
-import { useRouter } from "expo-router";
+import { Href, useRouter } from "expo-router";
 import React, { useEffect } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { useAuthStore } from "../../store/useAuthStore";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  redirectTo?: string;
+  redirectTo?: Href;
 }
 
 export default function ProtectedRoute({
