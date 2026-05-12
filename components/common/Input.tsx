@@ -1,26 +1,54 @@
+// components/common/Input.tsx
 import React from "react";
-import { Text, TextInput, TextInputProps, View } from "react-native";
+import {
+  Text,
+  TextInput,
+  TextInputProps,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 interface InputProps extends TextInputProps {
-  label?: string;
   error?: string;
+  leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
+  onRightIconPress?: () => void;
+  containerClassName?: string;
 }
 
 export default function Input({
-  label,
   error,
+  leftIcon,
+  rightIcon,
+  onRightIconPress,
+  containerClassName = "",
   className = "",
-  ...props
+  ...rest
 }: InputProps) {
   return (
-    <View className="mb-4">
-      {label && <Text className="text-gray-700 mb-2 font-medium">{label}</Text>}
-      <TextInput
-        className={`border ${error ? "border-red-500" : "border-gray-300"} rounded-lg px-4 py-3 text-base bg-white ${className}`}
-        placeholderTextColor="#9CA3AF"
-        {...props}
-      />
-      {error && <Text className="text-red-500 text-sm mt-1">{error}</Text>}
+    <View className={`w-full ${containerClassName}`}>
+      <View className="relative">
+        {leftIcon && (
+          <View className="absolute left-3 top-3.5 z-10">{leftIcon}</View>
+        )}
+        <TextInput
+          className={`bg-gray-50 border border-gray-200 rounded-xl text-gray-800 py-3 px-4 ${
+            leftIcon ? "pl-10" : ""
+          } ${rightIcon ? "pr-10" : ""} ${className}`}
+          placeholderTextColor="#9CA3AF"
+          {...rest}
+        />
+        {rightIcon && (
+          <TouchableOpacity
+            onPress={onRightIconPress}
+            className="absolute right-3 top-3.5 z-10"
+            disabled={!onRightIconPress}
+          >
+            {rightIcon}
+          </TouchableOpacity>
+        )}
+      </View>
+      {error && <Text className="text-red-500 text-xs mt-1">{error}</Text>}
     </View>
   );
 }

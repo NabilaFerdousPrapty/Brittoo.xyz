@@ -1,8 +1,9 @@
+// app/(auth)/login.tsx
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Alert,
   Image,
@@ -14,7 +15,6 @@ import {
   View,
 } from "react-native";
 import Input from "../../components/common/Input";
-import { mockUsers } from "../../constants/newMockdata";
 import { useAuthStore } from "../../store/useAuthStore";
 
 export default function Login() {
@@ -28,20 +28,7 @@ export default function Login() {
     {},
   );
 
-  // Debug: Log available users
-  useEffect(() => {
-    console.log("=== AVAILABLE MOCK USERS ===");
-    console.log("Total users:", mockUsers.length);
-    if (mockUsers[0]) {
-      console.log("User 1 - Email:", mockUsers[0].email);
-      console.log("User 1 - Password:", mockUsers[0].password);
-    }
-    if (mockUsers[1]) {
-      console.log("User 2 - Email:", mockUsers[1].email);
-      console.log("User 2 - Password:", mockUsers[1].password);
-    }
-  }, []);
-
+  // Demo credentials (optional, for quick testing)
   const mockCredentials = {
     email: "1901001@student.ruet.ac.bd",
     password: "password123",
@@ -69,10 +56,7 @@ export default function Login() {
   const handleLogin = async () => {
     if (!validateForm()) return;
 
-    console.log("Attempting login with:", email, password);
     const success = await login(email, password);
-    console.log("Login success:", success);
-
     if (success) {
       router.replace("/(tabs)");
     } else {
@@ -182,7 +166,6 @@ export default function Login() {
             </TouchableOpacity>
           </View>
 
-          {/* Rest of your form remains the same */}
           <View className="space-y-5">
             <View>
               <Text className="text-xs text-gray-600 mb-1">Email address</Text>
