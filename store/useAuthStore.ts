@@ -1,11 +1,11 @@
 // store/useAuthStore.ts
-import { create } from "zustand";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Location from "expo-location";
+import { Platform } from "react-native";
+import { create } from "zustand";
 import api from "../services/api";
-import getPublicIP from "../app/utils/getPublicIP";
 import { User } from "../types/auth";
-
+import getPublicIP from "../utils/getPublicIP";
 interface AuthState {
   user: User | null;
   token: string | null;
@@ -40,6 +40,29 @@ interface AuthState {
   logout: () => Promise<void>;
   clearError: () => void;
 }
+const storage = {
+  getItem: async (key: string) => {
+    if (Platform.OS === "web") {
+      // Use localStorage on web
+      return localStorage.getItem(key);
+    }
+    return AsyncStorage.getItem(key);
+  },
+  setItem: async (key: string, value: string) => {
+    if (Platform.OS === "web") {
+      localStorage.setItem(key, value);
+      return;
+    }
+    return AsyncStorage.setItem(key, value);
+  },
+  removeItem: async (key: string) => {
+    if (Platform.OS === "web") {
+      localStorage.removeItem(key);
+      return;
+    }
+    return AsyncStorage.removeItem(key);
+  },
+};
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
