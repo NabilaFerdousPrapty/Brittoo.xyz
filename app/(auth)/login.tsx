@@ -143,7 +143,7 @@ export default function Login() {
             </Text>
           </View>
 
-          <View className="mb-4 p-3 bg-blue-50 rounded-lg">
+          {/* <View className="mb-4 p-3 bg-blue-50 rounded-lg">
             <Text className="text-xs text-blue-800 font-medium mb-1">
               Demo Credentials:
             </Text>
@@ -157,14 +157,14 @@ export default function Login() {
               <Text className="text-xs text-green-600 font-medium">
                 Tap to fill demo credentials
               </Text>
-            </TouchableOpacity>
-            {/* Debug button - remove after testing */}
-            <TouchableOpacity onPress={clearStorage} className="mt-2">
+            </TouchableOpacity> */}
+          {/* Debug button - remove after testing */}
+          {/* <TouchableOpacity onPress={clearStorage} className="mt-2">
               <Text className="text-xs text-red-500">
                 Clear Storage (Debug)
               </Text>
             </TouchableOpacity>
-          </View>
+          </View>  */}
 
           <View className="space-y-5">
             <View>
