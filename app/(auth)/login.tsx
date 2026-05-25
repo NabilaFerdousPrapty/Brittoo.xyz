@@ -15,7 +15,7 @@ import {
   View,
 } from "react-native";
 import Input from "../../components/common/Input";
-import { useAuthStore } from "../../store/useAuthStore";
+import useAuthStore from "@/store/useAuthStore";
 
 export default function Login() {
   const router = useRouter();
