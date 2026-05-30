@@ -13,7 +13,7 @@ import {
 import { Button } from "../../components/button";
 import { Input } from "../../components/input";
 import { STORAGE_KEYS } from "../../constants";
-import { loginUser } from "../hooks/api";
+import { loginUser } from "../../hooks/api";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");

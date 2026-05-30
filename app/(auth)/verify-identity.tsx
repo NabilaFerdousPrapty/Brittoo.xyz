@@ -1,19 +1,19 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  Image,
-  Alert,
-} from "react-native";
-import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
+import React, { useState } from "react";
+import {
+  Alert,
+  Image,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { Button } from "../../components/button";
-import { verifyUserDocuments } from "../hooks/api";
 import { STORAGE_KEYS } from "../../constants";
+import { verifyUserDocuments } from "../../hooks/api";
 
 export default function VerifyIdentityScreen() {
   const [idCard, setIdCard] = useState<string | null>(null);
@@ -80,7 +80,7 @@ export default function VerifyIdentityScreen() {
         Alert.alert(
           "✅ Submitted!",
           "Your documents are under review. We'll notify you once verified.",
-          [{ text: "OK", onPress: () => router.replace("/dashboard") }],
+          [{ text: "OK", onPress: () => router.replace("/(tabs)/browse") }],
         );
       }
     } catch (err: any) {

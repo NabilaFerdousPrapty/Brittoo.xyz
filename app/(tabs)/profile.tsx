@@ -14,11 +14,23 @@ import {
 } from "react-native";
 import AuthModal from "../../components/common/AuthModal";
 import { mockDataService } from "../../services/mockDataService";
-import { useAuthStore } from "../../store/useAuthStore";
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { user, isAuthenticated, logout } = useAuthStore();
+  const isAuthenticated = true;
+  const user = {
+    name: "John Doe",
+    email: "jhon@gmail.com",
+    selfie: null,
+    securityScore: "HIGH",
+    brittooVerified: true,
+    bccWallet: {
+      availableBalance: 1500,
+      lockedBalance: 500,
+      requestedForWithdrawal: 200,
+    },
+    createdAt: "2022-01-15T10:00:00Z",
+  };
   const [showAuthModal, setShowAuthModal] = React.useState(false);
   const [stats, setStats] = useState({
     totalProducts: 0,
@@ -336,36 +348,36 @@ export default function ProfileScreen() {
         </View>
 
         {/* Wallet Balance Card */}
-        {user?.bccWallet && (
-          <View className="px-4 mt-4">
-            <TouchableOpacity
-              onPress={() => router.push("/(tabs)/wallet")}
-              className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-4"
-            >
-              <View className="flex-row justify-between items-center">
-                <View>
-                  <Text className="text-white/80 text-xs">
-                    Available Balance
-                  </Text>
-                  <Text className="text-white text-2xl font-bold mt-1">
-                    ৳{user.bccWallet.availableBalance}
-                  </Text>
-                </View>
-                <View className="bg-white/20 rounded-full p-2">
-                  <Ionicons name="wallet-outline" size={24} color="white" />
-                </View>
-              </View>
-              <View className="flex-row justify-between mt-3">
-                <Text className="text-white/70 text-xs">
-                  Locked: ৳{user.bccWallet.lockedBalance}
-                </Text>
-                <Text className="text-white/70 text-xs">
-                  Pending: ৳{user.bccWallet.requestedForWithdrawal}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-        )}
+        {/* {user?.bccWallet && (
+          // <View className="px-4 mt-4">
+          //   <TouchableOpacity
+          //     onPress={() => router.push("/(tabs)/wallet")}
+          //     className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-4"
+          //   >
+          //     <View className="flex-row justify-between items-center">
+          //       <View>
+          //         <Text className="text-white/80 text-xs">
+          //           Available Balance
+          //         </Text>
+          //         <Text className="text-white text-2xl font-bold mt-1">
+          //           ৳{user.bccWallet.availableBalance}
+          //         </Text>
+          //       </View>
+          //       <View className="bg-white/20 rounded-full p-2">
+          //         <Ionicons name="wallet-outline" size={24} color="white" />
+          //       </View>
+          //     </View>
+          //     <View className="flex-row justify-between mt-3">
+          //       <Text className="text-white/70 text-xs">
+          //         Locked: ৳{user.bccWallet.lockedBalance}
+          //       </Text>
+          //       <Text className="text-white/70 text-xs">
+          //         Pending: ৳{user.bccWallet.requestedForWithdrawal}
+          //       </Text>
+          //     </View>
+          //   </TouchableOpacity>
+          // </View>
+        )} */}
 
         {/* Quick Actions Grid */}
         <View className="px-4 mt-6">
@@ -454,11 +466,10 @@ export default function ProfileScreen() {
         {/* Logout Button */}
         <View className="px-4 mt-8 mb-8">
           <TouchableOpacity
-            onPress={logout}
             className="bg-red-50 py-4 rounded-xl flex-row items-center justify-center"
             activeOpacity={0.7}
           >
-            <Ionicons name="log-out-outline" size={20} color="#EF4444" />
+            <Ionicons name="nplog-out-outline" size={20} color="#EF4444" />
             <Text className="text-red-500 font-semibold ml-2">Logout</Text>
           </TouchableOpacity>
 

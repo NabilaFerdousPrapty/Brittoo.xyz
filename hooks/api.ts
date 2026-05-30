@@ -51,7 +51,7 @@ export const resetPassword = (token: string, newPassword: string) =>
 export const verifyUserDocuments = async (
   email: string,
   idCardUri: string,
-  selfieUri: string
+  selfieUri: string,
 ) => {
   const formData = new FormData();
   formData.append("email", email);

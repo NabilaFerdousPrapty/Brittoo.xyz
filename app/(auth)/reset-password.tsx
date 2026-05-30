@@ -1,17 +1,17 @@
+import { Ionicons } from "@expo/vector-icons";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import {
-  View,
-  Text,
-  TouchableOpacity,
+  Alert,
   KeyboardAvoidingView,
   Platform,
-  Alert,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { router, useLocalSearchParams } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import { Input } from "../../components/input";
 import { Button } from "../../components/button";
-import { resetPassword } from "../hooks/api";
+import { Input } from "../../components/input";
+import { resetPassword } from "../../hooks/api";
 
 export default function ResetPasswordScreen() {
   const { token } = useLocalSearchParams<{ token?: string }>();

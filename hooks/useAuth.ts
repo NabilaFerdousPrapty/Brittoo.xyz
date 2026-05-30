@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
 import * as SecureStore from "expo-secure-store";
+import { useCallback, useEffect, useState } from "react";
 import { STORAGE_KEYS } from "../constants";
 import { getCurrentUser } from "./api";
 
@@ -42,7 +42,7 @@ export const useAuth = () => {
           setUser(res.data.data);
           await SecureStore.setItemAsync(
             STORAGE_KEYS.USER,
-            JSON.stringify(res.data.data)
+            JSON.stringify(res.data.data),
           );
         }
       }

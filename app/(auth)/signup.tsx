@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { Button } from "../../components/button";
 import { Input } from "../../components/input";
-import { registerUser } from "../hooks/api";
+import { registerUser } from "../../hooks/api";
 
 const UNIVERSITY_HINT =
   "RUET: 2010033@student.ruet.ac.bd\nRU: s2310876@ru.ac.bd\nBUET: 2212011@cse.buet.ac.bd\nSUST: 2024134111@student.sust.edu\nIUT: name@iut-dhaka.edu";

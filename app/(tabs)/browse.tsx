@@ -5,12 +5,12 @@ import AuthModal from "../../components/common/AuthModal";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import FilterBar from "../../components/listings/FilterBar";
 import ProductGrid from "../../components/listings/ProductGrid";
-import { useAuthStore } from "../../store/useAuthStore";
+
 import { useProductStore } from "../../store/useProductStore";
 
 export default function BrowseScreen() {
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
+
   const {
     filteredProducts,
     isLoading,
@@ -27,7 +27,7 @@ export default function BrowseScreen() {
   useEffect(() => {
     fetchProducts();
   }, []);
-
+  const isAuthenticated = true; // Replace with actual auth state from your store
   const handleProductPress = (product: any) => {
     if (isAuthenticated) {
       router.push(`/product/${product.id}`);

@@ -1,4 +1,4 @@
-export const API_BASE_URL = "https://your-api-domain.com/api"; // 🔁 Replace with your backend URL
+export const API_BASE_URL = "https://localhost:5000"; // 🔁 Replace with your backend URL
 
 export const STORAGE_KEYS = {
   TOKEN: "brittoo_token",
@@ -7,10 +7,4 @@ export const STORAGE_KEYS = {
 
 export const APP_NAME = "Brittoo";
 
-export const SUPPORTED_UNIVERSITIES = [
-  "RUET",
-  "RU",
-  "BUET",
-  "SUST",
-  "IUT",
-];
+export const SUPPORTED_UNIVERSITIES = ["RUET", "RU", "BUET", "SUST", "IUT"];

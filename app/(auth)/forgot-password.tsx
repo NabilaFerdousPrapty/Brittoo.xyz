@@ -1,16 +1,16 @@
+import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import React, { useState } from "react";
 import {
-  View,
-  Text,
-  TouchableOpacity,
+  Alert,
   KeyboardAvoidingView,
   Platform,
-  Alert,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { router } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import { Input } from "../../components/input";
 import { Button } from "../../components/button";
+import { Input } from "../../components/input";
 import { forgotPassword } from "../../hooks/api";
 
 export default function ForgotPasswordScreen() {
@@ -50,8 +50,8 @@ export default function ForgotPasswordScreen() {
         </Text>
         <Text className="text-[#6b7280] text-sm text-center leading-6 mb-8">
           If an account exists for{" "}
-          <Text className="text-[#8b84ff]">{email}</Text>, we've sent a
-          password reset link. It expires in 15 minutes.
+          <Text className="text-[#8b84ff]">{email}</Text>, we've sent a password
+          reset link. It expires in 15 minutes.
         </Text>
         <Button
           label="Back to Login"
@@ -69,7 +69,10 @@ export default function ForgotPasswordScreen() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <View className="flex-1 px-6 pt-14 pb-8">
-        <TouchableOpacity onPress={() => router.back()} className="mb-8 self-start">
+        <TouchableOpacity
+          onPress={() => router.back()}
+          className="mb-8 self-start"
+        >
           <Ionicons name="arrow-back" size={24} color="#6c63ff" />
         </TouchableOpacity>
 
@@ -81,7 +84,8 @@ export default function ForgotPasswordScreen() {
           Forgot password?
         </Text>
         <Text className="text-[#6b7280] text-sm mb-10 leading-6">
-          No worries! Enter your university email and we'll send you a reset link.
+          No worries! Enter your university email and we'll send you a reset
+          link.
         </Text>
 
         <Input
@@ -96,7 +100,11 @@ export default function ForgotPasswordScreen() {
         />
 
         <View className="bg-[#1a1a2e] border border-[#2a2a40] rounded-xl p-3 mb-8 flex-row items-center gap-2">
-          <Ionicons name="information-circle-outline" size={14} color="#6b7280" />
+          <Ionicons
+            name="information-circle-outline"
+            size={14}
+            color="#6b7280"
+          />
           <Text className="text-[#6b7280] text-xs flex-1">
             Maximum 3 reset requests per 24 hours
           </Text>

@@ -1,10 +1,8 @@
-import { useAuthStore } from "@/store/useAuthStore";
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import { View } from "react-native";
 
 export default function TabsLayout() {
-  const { isAuthenticated } = useAuthStore();
   return (
     <Tabs
       screenOptions={{

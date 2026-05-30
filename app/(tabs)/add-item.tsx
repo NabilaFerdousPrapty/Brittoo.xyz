@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -12,15 +12,12 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import AuthModal from "../../components/common/AuthModal";
 import Button from "../../components/common/Button";
 import Input from "../../components/common/Input";
 import { categories } from "../../constants/categories";
-import { useAuthStore } from "../../store/useAuthStore";
 
 export default function AddItemScreen() {
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
 
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [title, setTitle] = useState("");
@@ -32,35 +29,6 @@ export default function AddItemScreen() {
   const [images, setImages] = useState<string[]>([]);
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
   const [isUploading, setIsUploading] = useState(false);
-
-  useEffect(() => {
-    // Check authentication on mount
-    if (!isAuthenticated) {
-      setShowAuthModal(true);
-    }
-
-    // Request permissions on mount using the modern approach
-    (async () => {
-      const { status } =
-        await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== "granted") {
-        Alert.alert(
-          "Permission Required",
-          "Sorry, we need camera roll permissions to upload images!",
-          [{ text: "OK" }],
-        );
-      }
-    })();
-  }, []);
-
-  // Listen for auth state changes
-  useEffect(() => {
-    if (!isAuthenticated) {
-      setShowAuthModal(true);
-    } else {
-      setShowAuthModal(false);
-    }
-  }, [isAuthenticated]);
 
   const pickMultipleImages = async () => {
     try {
@@ -305,30 +273,30 @@ export default function AddItemScreen() {
   };
 
   // If not authenticated, show auth modal and prevent form rendering
-  if (!isAuthenticated) {
-    return (
-      <View className="flex-1 bg-white">
-        <AuthModal
-          visible={showAuthModal}
-          onClose={handleAuthModalClose}
-          message="Please login to list an item"
-        />
-        <View className="flex-1 justify-center items-center bg-gray-50">
-          <Ionicons name="lock-closed" size={50} color="#9CA3AF" />
-          <Text className="text-gray-500 mt-4">Authentication required</Text>
-          <Text className="text-gray-400 text-sm text-center px-8 mt-2">
-            You need to be logged in to list items
-          </Text>
-          <TouchableOpacity
-            onPress={() => router.push("/(auth)/login")}
-            className="mt-6 bg-green-500 px-8 py-3 rounded-full"
-          >
-            <Text className="text-white font-semibold">Go to Login</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  }
+  // if (!isAuthenticated) {
+  //   return (
+  //     <View className="flex-1 bg-white">
+  //       <AuthModal
+  //         visible={showAuthModal}
+  //         onClose={handleAuthModalClose}
+  //         message="Please login to list an item"
+  //       />
+  //       <View className="flex-1 justify-center items-center bg-gray-50">
+  //         <Ionicons name="lock-closed" size={50} color="#9CA3AF" />
+  //         <Text className="text-gray-500 mt-4">Authentication required</Text>
+  //         <Text className="text-gray-400 text-sm text-center px-8 mt-2">
+  //           You need to be logged in to list items
+  //         </Text>
+  //         <TouchableOpacity
+  //           onPress={() => router.push("/(auth)/login")}
+  //           className="mt-6 bg-green-500 px-8 py-3 rounded-full"
+  //         >
+  //           <Text className="text-white font-semibold">Go to Login</Text>
+  //         </TouchableOpacity>
+  //       </View>
+  //     </View>
+  //   );
+  // }
 
   return (
     <ScrollView
@@ -424,7 +392,6 @@ export default function AddItemScreen() {
         {/* Basic Info */}
         <View className="mb-4">
           <Input
-            label="Title"
             placeholder="e.g., Sony A7III Camera"
             value={title}
             onChangeText={setTitle}
@@ -544,7 +511,6 @@ export default function AddItemScreen() {
         {/* Location */}
         <View className="mb-6">
           <Input
-            label="Location"
             placeholder="e.g., New York, NY"
             value={location}
             onChangeText={setLocation}

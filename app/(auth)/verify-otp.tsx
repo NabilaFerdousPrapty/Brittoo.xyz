@@ -1,19 +1,19 @@
-import React, { useState, useEffect, useRef } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { router, useLocalSearchParams } from "expo-router";
+import * as SecureStore from "expo-secure-store";
+import React, { useEffect, useRef, useState } from "react";
 import {
-  View,
-  Text,
-  TouchableOpacity,
   Alert,
-  TextInput,
   KeyboardAvoidingView,
   Platform,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { router, useLocalSearchParams } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import * as SecureStore from "expo-secure-store";
 import { Button } from "../../components/button";
-import { verifyOTP, resendOTP } from "../hooks/api";
 import { STORAGE_KEYS } from "../../constants";
+import { resendOTP, verifyOTP } from "../../hooks/api";
 
 const OTP_LENGTH = 5;
 const RESEND_COOLDOWN = 60; // seconds
@@ -82,7 +82,12 @@ export default function VerifyOTPScreen() {
         Alert.alert(
           "✅ Verified!",
           "Your email has been verified successfully.",
-          [{ text: "Continue", onPress: () => router.replace("/dashboard") }],
+          [
+            {
+              text: "Continue",
+              onPress: () => router.replace("/(tabs)/browse"),
+            },
+          ],
         );
       }
     } catch (err: any) {
