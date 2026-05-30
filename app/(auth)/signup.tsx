@@ -1,169 +1,193 @@
-// app/(auth)/signup.tsx
 import { Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
+import { router } from "expo-router";
 import React, { useState } from "react";
-import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
-import Button from "../../components/common/Button";
-import Input from "../../components/common/Input";
-import { useAuthStore } from "../../store/useAuthStore";
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { Button } from "../../components/button";
+import { Input } from "../../components/input";
+import { registerUser } from "../hooks/api";
 
-export default function Signup() {
-  const router = useRouter();
-  const { signup, isLoading, error } = useAuthStore();
+const UNIVERSITY_HINT =
+  "RUET: 2010033@student.ruet.ac.bd\nRU: s2310876@ru.ac.bd\nBUET: 2212011@cse.buet.ac.bd\nSUST: 2024134111@student.sust.edu\nIUT: name@iut-dhaka.edu";
 
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [termsAccepted, setTermsAccepted] = useState(false);
-  const [errors, setErrors] = useState<{
-    name?: string;
-    email?: string;
-    password?: string;
-    confirmPassword?: string;
-    terms?: string;
-  }>({});
+export default function RegisterScreen() {
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirm: "",
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
+  const [showHint, setShowHint] = useState(false);
 
-  const validateForm = (): boolean => {
-    const newErrors: typeof errors = {};
-    if (!name.trim()) newErrors.name = "Full name is required";
-    if (!email.trim()) newErrors.email = "Email is required";
-    else if (!/^.+@student\.ruet\.ac\.bd$/.test(email))
-      newErrors.email = "Use your RUET student email (@student.ruet.ac.bd)";
-    if (!password) newErrors.password = "Password is required";
-    else if (password.length < 6)
-      newErrors.password = "Password must be at least 6 characters";
-    if (password !== confirmPassword)
-      newErrors.confirmPassword = "Passwords do not match";
-    if (!termsAccepted)
-      newErrors.terms = "You must accept the Terms & Privacy policy";
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  const set = (field: string) => (val: string) =>
+    setForm((f) => ({ ...f, [field]: val }));
+
+  const validate = () => {
+    const e: Record<string, string> = {};
+    if (!form.name.trim()) e.name = "Name is required";
+    if (!form.email.trim()) e.email = "Email is required";
+    if (!form.password) e.password = "Password is required";
+    if (form.password.length < 6) e.password = "Minimum 6 characters";
+    if (form.password !== form.confirm) e.confirm = "Passwords don't match";
+    setErrors(e);
+    return Object.keys(e).length === 0;
   };
 
-  const handleSignup = async () => {
-    if (!validateForm()) return;
-    const result = await signup(name, email, password);
-    if (result.success && result.email) {
-      router.push({
-        pathname: "/(auth)/verify-otp",
-        params: { email: result.email },
+  const handleRegister = async () => {
+    if (!validate()) return;
+    setLoading(true);
+    try {
+      const res = await registerUser({
+        name: form.name.trim(),
+        email: form.email.trim().toLowerCase(),
+        password: form.password,
       });
-    } else {
-      Alert.alert("Signup Failed", result.error || error || "Unknown error");
+      if (res.data.success) {
+        router.push({
+          pathname: "/(auth)/verify-otp",
+          params: { email: form.email.trim().toLowerCase() },
+        });
+      }
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.message ||
+        "Registration failed. Please try again.";
+      Alert.alert("Error", msg);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <LinearGradient colors={["#ffffff", "#f9fafb"]} style={{ flex: 1 }}>
+    <KeyboardAvoidingView
+      className="flex-1 bg-white"
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
       <ScrollView
-        contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
+        className="flex-1"
+        contentContainerStyle={{ flexGrow: 1 }}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
-        <View className="px-6 py-8">
-          <View className="bg-white rounded-3xl p-8 shadow-lg">
-            <View className="items-center mb-6">
-              <Text className="text-2xl font-bold text-gray-900">
-                Create Account
-              </Text>
-              <Text className="text-gray-500 text-center mt-1">
-                Join Brittoo and never miss a class
-              </Text>
-            </View>
+        <View className="flex-1 px-6 pt-14 pb-10">
+          {/* Logo mark */}
+          <View className="w-10 h-10 bg-gray-900 rounded-xl items-center justify-center mb-8">
+            <Text className="text-white text-lg font-semibold">B</Text>
+          </View>
 
-            <View className="space-y-4">
-              <Input
-                placeholder="Full Name"
-                value={name}
-                onChangeText={setName}
-                error={errors.name}
-                leftIcon={
-                  <Ionicons name="person-outline" size={18} color="#9CA3AF" />
-                }
-              />
-              <Input
-                placeholder="your_roll@student.ruet.ac.bd"
-                value={email}
-                onChangeText={setEmail}
-                autoCapitalize="none"
-                keyboardType="email-address"
-                error={errors.email}
-                leftIcon={
-                  <Ionicons name="mail-outline" size={18} color="#9CA3AF" />
-                }
-              />
-              <Input
-                placeholder="Password"
-                secureTextEntry
-                value={password}
-                onChangeText={setPassword}
-                error={errors.password}
-                leftIcon={
-                  <Ionicons
-                    name="lock-closed-outline"
-                    size={18}
-                    color="#9CA3AF"
-                  />
-                }
-              />
-              <Input
-                placeholder="Confirm Password"
-                secureTextEntry
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                error={errors.confirmPassword}
-                leftIcon={
-                  <Ionicons
-                    name="shield-checkmark-outline"
-                    size={18}
-                    color="#9CA3AF"
-                  />
-                }
-              />
+          <Text className="text-gray-900 text-2xl font-semibold mb-1">
+            Create account
+          </Text>
+          <Text className="text-gray-400 text-sm mb-8">
+            Join your university network
+          </Text>
 
+          {/* Name */}
+          <Input
+            label="Full name"
+            placeholder="Your full name"
+            leftIcon="person-outline"
+            value={form.name}
+            onChangeText={set("name")}
+            error={errors.name}
+            autoComplete="name"
+          />
+
+          {/* Email with hint */}
+          <View>
+            <View className="flex-row items-center justify-between mb-1.5">
+              <Text className="text-gray-500 text-xs font-medium ml-0.5">
+                University email
+              </Text>
               <TouchableOpacity
-                onPress={() => setTermsAccepted(!termsAccepted)}
-                className="flex-row items-center mt-2"
-                activeOpacity={0.7}
+                onPress={() => setShowHint((h) => !h)}
+                className="flex-row items-center gap-1"
               >
-                <View
-                  className={`w-5 h-5 border-2 rounded mr-3 items-center justify-center ${termsAccepted ? "bg-green-500 border-green-500" : "border-gray-300"}`}
-                >
-                  {termsAccepted && (
-                    <Ionicons name="checkmark" size={16} color="white" />
-                  )}
-                </View>
-                <Text className="text-sm text-gray-600">
-                  I agree to the Terms & Privacy
-                </Text>
+                <Ionicons
+                  name="information-circle-outline"
+                  size={13}
+                  color="#9ca3af"
+                />
+                <Text className="text-gray-400 text-xs">Supported formats</Text>
               </TouchableOpacity>
-              {errors.terms && (
-                <Text className="text-red-500 text-xs mt-1">
-                  {errors.terms}
-                </Text>
-              )}
             </View>
 
-            <Button
-              title="Sign Up"
-              onPress={handleSignup}
-              loading={isLoading}
-              disabled={!termsAccepted}
-              className="mt-8 rounded-xl"
-            />
+            {showHint && (
+              <View className="bg-gray-50 border border-gray-100 rounded-xl p-3 mb-2">
+                <Text className="text-gray-400 text-xs leading-5">
+                  {UNIVERSITY_HINT}
+                </Text>
+              </View>
+            )}
 
-            <TouchableOpacity
-              onPress={() => router.push("/(auth)/login")}
-              className="mt-6"
-            >
-              <Text className="text-center text-gray-600">
-                Already have an account?{" "}
-                <Text className="text-green-600 font-bold">Login</Text>
+            <Input
+              placeholder="your@university.edu"
+              leftIcon="mail-outline"
+              value={form.email}
+              onChangeText={set("email")}
+              error={errors.email}
+              keyboardType="email-address"
+              autoComplete="email"
+            />
+          </View>
+
+          <Input
+            label="Password"
+            placeholder="Min. 6 characters"
+            leftIcon="lock-closed-outline"
+            isPassword
+            value={form.password}
+            onChangeText={set("password")}
+            error={errors.password}
+          />
+
+          <Input
+            label="Confirm password"
+            placeholder="Re-enter password"
+            leftIcon="shield-checkmark-outline"
+            isPassword
+            value={form.confirm}
+            onChangeText={set("confirm")}
+            error={errors.confirm}
+          />
+
+          {/* University note */}
+          <View className="flex-row items-center gap-2 bg-gray-50 rounded-xl p-3 mb-6">
+            <Ionicons name="school-outline" size={14} color="#9ca3af" />
+            <Text className="text-gray-400 text-xs flex-1">
+              Only RUET, RU, BUET, SUST, and IUT emails are accepted
+            </Text>
+          </View>
+
+          <Button
+            label="Create account"
+            onPress={handleRegister}
+            loading={loading}
+            size="lg"
+            className="mb-4"
+          />
+
+          <View className="flex-row justify-center items-center gap-1">
+            <Text className="text-gray-400 text-sm">
+              Already have an account?
+            </Text>
+            <TouchableOpacity onPress={() => router.push("/(auth)/login")}>
+              <Text className="text-gray-900 text-sm font-semibold">
+                Sign in
               </Text>
             </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
-    </LinearGradient>
+    </KeyboardAvoidingView>
   );
 }
