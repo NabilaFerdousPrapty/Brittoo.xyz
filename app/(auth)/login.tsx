@@ -3,6 +3,7 @@ import * as SecureStore from "expo-secure-store";
 import React, { useState } from "react";
 import {
   Alert,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -35,20 +36,38 @@ export default function LoginScreen() {
     try {
       const res = await loginUser(email.trim().toLowerCase(), password);
       if (res.data.success) {
+        // Store token and user
         await SecureStore.setItemAsync(STORAGE_KEYS.TOKEN, res.data.token);
         await SecureStore.setItemAsync(
           STORAGE_KEYS.USER,
           JSON.stringify(res.data.user),
         );
+        // Navigate to main app
         router.replace("/(tabs)/browse");
+      } else {
+        // In case success is false (shouldn't happen with proper backend)
+        Alert.alert("Login failed", res.data.message || "Unknown error");
       }
     } catch (err: any) {
+      // Enhanced error logging – remove after debugging
+      console.log("Login error details:", {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+      });
+
       const status = err?.response?.status;
       const msg = err?.response?.data?.message || "Login failed";
+
       if (status === 429) {
         Alert.alert("Too many attempts", msg);
       } else if (status === 401) {
         setErrors({ password: "Incorrect email or password" });
+      } else if (status === undefined || err.message === "Network Error") {
+        Alert.alert(
+          "Connection Error",
+          "Cannot reach the server. Make sure the backend is running and the base URL is correct.",
+        );
       } else {
         Alert.alert("Sign in failed", msg);
       }
@@ -59,7 +78,7 @@ export default function LoginScreen() {
 
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-white"
+      className="flex-1 bg-gray-50"
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView
@@ -68,18 +87,23 @@ export default function LoginScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View className="flex-1 px-6 pt-14 pb-10 justify-between">
-          <View>
-            {/* Logo mark */}
-            <View className="w-10 h-10 bg-gray-900 rounded-xl items-center justify-center mb-8">
-              <Text className="text-white text-lg font-semibold">B</Text>
+        <View className="flex-1 justify-center px-4 py-10">
+          {/* Main Card */}
+          <View className="bg-white rounded-3xl shadow-xl px-6 py-8 border border-gray-100">
+            {/* Brittoo Logo */}
+            <View className="items-center mb-6">
+              <Image
+                source={require("../../assets/images/brittoo-logo.png")}
+                style={{ width: 180, height: 70 }}
+                resizeMode="contain"
+              />
             </View>
 
-            <Text className="text-gray-900 text-2xl font-semibold mb-1">
+            <Text className="text-gray-800 text-2xl font-bold text-center mb-1">
               Welcome back
             </Text>
-            <Text className="text-gray-400 text-sm mb-10">
-              Sign in to Brittoo
+            <Text className="text-gray-500 text-sm text-center mb-8">
+              Sign in to continue to Brittoo
             </Text>
 
             <Input
@@ -128,14 +152,14 @@ export default function LoginScreen() {
             {/* Divider */}
             <View className="flex-row items-center gap-3 mb-6">
               <View className="flex-1 h-px bg-gray-100" />
-              <Text className="text-gray-300 text-xs">or</Text>
+              <Text className="text-gray-400 text-xs font-medium">or</Text>
               <View className="flex-1 h-px bg-gray-100" />
             </View>
 
             {/* Rate limit info card */}
-            <View className="flex-row items-start gap-2 bg-gray-50 border border-gray-100 rounded-xl p-3">
+            <View className="flex-row items-start gap-2 bg-blue-50/30 border border-blue-100 rounded-xl p-3">
               <Text className="text-base mt-0.5">🔒</Text>
-              <Text className="text-gray-400 text-xs flex-1 leading-5">
+              <Text className="text-gray-500 text-xs flex-1 leading-5">
                 For security, sign-in is paused after 5 failed attempts within
                 15 minutes.
               </Text>
@@ -143,8 +167,8 @@ export default function LoginScreen() {
           </View>
 
           {/* Footer */}
-          <View className="flex-row justify-center items-center gap-1 mt-8">
-            <Text className="text-gray-400 text-sm">
+          <View className="flex-row justify-center items-center gap-1 mt-6">
+            <Text className="text-gray-500 text-sm">
               Don't have an account?
             </Text>
             <TouchableOpacity onPress={() => router.push("/(auth)/signup")}>

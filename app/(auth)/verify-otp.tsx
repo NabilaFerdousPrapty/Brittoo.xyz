@@ -1,3 +1,4 @@
+import { resendOtp, verifyOtp } from "@/hooks/api";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import * as SecureStore from "expo-secure-store";
@@ -13,7 +14,6 @@ import {
 } from "react-native";
 import { Button } from "../../components/button";
 import { STORAGE_KEYS } from "../../constants";
-import { resendOTP, verifyOTP } from "../../hooks/api";
 
 const OTP_LENGTH = 5;
 const RESEND_COOLDOWN = 60; // seconds
@@ -72,7 +72,7 @@ export default function VerifyOTPScreen() {
     }
     setLoading(true);
     try {
-      const res = await verifyOTP(email!, code);
+      const res = await verifyOtp(email!, code);
       if (res.data.success) {
         await SecureStore.setItemAsync(STORAGE_KEYS.TOKEN, res.data.token);
         await SecureStore.setItemAsync(
@@ -103,7 +103,7 @@ export default function VerifyOTPScreen() {
   const handleResend = async () => {
     setResendLoading(true);
     try {
-      const res = await resendOTP(email!);
+      const res = await resendOtp(email!);
       if (res.data.success) {
         Alert.alert("OTP Sent", `A new code was sent to ${email}`);
         setCountdown(RESEND_COOLDOWN);

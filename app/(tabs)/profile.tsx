@@ -86,7 +86,7 @@ export default function ProfileScreen() {
   };
 
   // Format member since date
-  const getMemberSince = (date: Date) => {
+  const getMemberSince = (date: string | Date) => {
     return new Date(date).toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
@@ -390,7 +390,7 @@ export default function ProfileScreen() {
                 key={item.id}
                 className="w-1/2 px-1 mb-2"
                 activeOpacity={0.7}
-                onPress={() => router.push(item.route)}
+                onPress={() => router.push(item?.route)}
               >
                 <View
                   className="bg-white p-4 rounded-xl flex-row items-center shadow-sm"

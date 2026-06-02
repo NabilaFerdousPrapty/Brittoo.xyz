@@ -3,6 +3,7 @@ import { router } from "expo-router";
 import React, { useState } from "react";
 import {
   Alert,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -15,7 +16,7 @@ import { Input } from "../../components/input";
 import { registerUser } from "../../hooks/api";
 
 const UNIVERSITY_HINT =
-  "RUET: 2010033@student.ruet.ac.bd\nRU: s2310876@ru.ac.bd\nBUET: 2212011@cse.buet.ac.bd\nSUST: 2024134111@student.sust.edu\nIUT: name@iut-dhaka.edu";
+  "RUET: 2010033@student.ruet.ac.bd\nFormat: [roll]@student.ruet.ac.bd";
 
 export default function RegisterScreen() {
   const [form, setForm] = useState({
@@ -35,6 +36,9 @@ export default function RegisterScreen() {
     const e: Record<string, string> = {};
     if (!form.name.trim()) e.name = "Name is required";
     if (!form.email.trim()) e.email = "Email is required";
+    // Add RUET email format validation
+    const emailRegex = /^\d+@student\.ruet\.ac\.bd$/;
+
     if (!form.password) e.password = "Password is required";
     if (form.password.length < 6) e.password = "Minimum 6 characters";
     if (form.password !== form.confirm) e.confirm = "Passwords don't match";
@@ -69,7 +73,7 @@ export default function RegisterScreen() {
 
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-white"
+      className="flex-1 bg-gray-50"
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView
@@ -78,113 +82,121 @@ export default function RegisterScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View className="flex-1 px-6 pt-14 pb-10">
-          {/* Logo mark */}
-          <View className="w-10 h-10 bg-gray-900 rounded-xl items-center justify-center mb-8">
-            <Text className="text-white text-lg font-semibold">B</Text>
-          </View>
-
-          <Text className="text-gray-900 text-2xl font-semibold mb-1">
-            Create account
-          </Text>
-          <Text className="text-gray-400 text-sm mb-8">
-            Join your university network
-          </Text>
-
-          {/* Name */}
-          <Input
-            label="Full name"
-            placeholder="Your full name"
-            leftIcon="person-outline"
-            value={form.name}
-            onChangeText={set("name")}
-            error={errors.name}
-            autoComplete="name"
-          />
-
-          {/* Email with hint */}
-          <View>
-            <View className="flex-row items-center justify-between mb-1.5">
-              <Text className="text-gray-500 text-xs font-medium ml-0.5">
-                University email
-              </Text>
-              <TouchableOpacity
-                onPress={() => setShowHint((h) => !h)}
-                className="flex-row items-center gap-1"
-              >
-                <Ionicons
-                  name="information-circle-outline"
-                  size={13}
-                  color="#9ca3af"
-                />
-                <Text className="text-gray-400 text-xs">Supported formats</Text>
-              </TouchableOpacity>
+        <View className="flex-1 justify-center px-4 py-10">
+          <View className="bg-white rounded-3xl shadow-xl px-6 py-8 border border-gray-100">
+            {/* Brittoo Logo */}
+            <View className="items-center mb-6">
+              <Image
+                source={require("../../assets/images/brittoo-logo.png")}
+                style={{ width: 160, height: 60 }}
+                resizeMode="contain"
+              />
             </View>
 
-            {showHint && (
-              <View className="bg-gray-50 border border-gray-100 rounded-xl p-3 mb-2">
-                <Text className="text-gray-400 text-xs leading-5">
-                  {UNIVERSITY_HINT}
+            <Text className="text-gray-800 text-2xl font-bold text-center mb-1">
+              Create account
+            </Text>
+            <Text className="text-gray-500 text-sm text-center mb-8">
+              Join your university network
+            </Text>
+
+            {/* Name */}
+            <Input
+              label="Full name"
+              placeholder="Your full name"
+              leftIcon="person-outline"
+              value={form.name}
+              onChangeText={set("name")}
+              error={errors.name}
+              autoComplete="name"
+            />
+
+            {/* Email with hint */}
+            <View>
+              <View className="flex-row items-center justify-between mb-1.5">
+                <Text className="text-gray-500 text-xs font-medium ml-0.5">
+                  University email
                 </Text>
+                <TouchableOpacity
+                  onPress={() => setShowHint((h) => !h)}
+                  className="flex-row items-center gap-1"
+                >
+                  <Ionicons
+                    name="information-circle-outline"
+                    size={13}
+                    color="#9ca3af"
+                  />
+                  <Text className="text-gray-400 text-xs">
+                    Supported formats
+                  </Text>
+                </TouchableOpacity>
               </View>
-            )}
+
+              {showHint && (
+                <View className="bg-gray-50 border border-gray-100 rounded-xl p-3 mb-2">
+                  <Text className="text-gray-500 text-xs leading-5">
+                    {UNIVERSITY_HINT}
+                  </Text>
+                </View>
+              )}
+
+              <Input
+                placeholder="your@university.edu"
+                leftIcon="mail-outline"
+                value={form.email}
+                onChangeText={set("email")}
+                error={errors.email}
+                keyboardType="email-address"
+                autoComplete="email"
+              />
+            </View>
 
             <Input
-              placeholder="your@university.edu"
-              leftIcon="mail-outline"
-              value={form.email}
-              onChangeText={set("email")}
-              error={errors.email}
-              keyboardType="email-address"
-              autoComplete="email"
+              label="Password"
+              placeholder="Min. 6 characters"
+              leftIcon="lock-closed-outline"
+              isPassword
+              value={form.password}
+              onChangeText={set("password")}
+              error={errors.password}
             />
-          </View>
 
-          <Input
-            label="Password"
-            placeholder="Min. 6 characters"
-            leftIcon="lock-closed-outline"
-            isPassword
-            value={form.password}
-            onChangeText={set("password")}
-            error={errors.password}
-          />
+            <Input
+              label="Confirm password"
+              placeholder="Re-enter password"
+              leftIcon="shield-checkmark-outline"
+              isPassword
+              value={form.confirm}
+              onChangeText={set("confirm")}
+              error={errors.confirm}
+            />
 
-          <Input
-            label="Confirm password"
-            placeholder="Re-enter password"
-            leftIcon="shield-checkmark-outline"
-            isPassword
-            value={form.confirm}
-            onChangeText={set("confirm")}
-            error={errors.confirm}
-          />
-
-          {/* University note */}
-          <View className="flex-row items-center gap-2 bg-gray-50 rounded-xl p-3 mb-6">
-            <Ionicons name="school-outline" size={14} color="#9ca3af" />
-            <Text className="text-gray-400 text-xs flex-1">
-              Only RUET, RU, BUET, SUST, and IUT emails are accepted
-            </Text>
-          </View>
-
-          <Button
-            label="Create account"
-            onPress={handleRegister}
-            loading={loading}
-            size="lg"
-            className="mb-4"
-          />
-
-          <View className="flex-row justify-center items-center gap-1">
-            <Text className="text-gray-400 text-sm">
-              Already have an account?
-            </Text>
-            <TouchableOpacity onPress={() => router.push("/(auth)/login")}>
-              <Text className="text-gray-900 text-sm font-semibold">
-                Sign in
+            {/* University note - updated to only RUET */}
+            {/* <View className="flex-row items-start gap-2 bg-blue-50/30 border border-blue-100 rounded-xl p-3 mb-6">
+              <Ionicons name="school-outline" size={14} color="#6b7280" />
+              <Text className="text-gray-500 text-xs flex-1 leading-5">
+                Only RUET emails (@student.ruet.ac.bd) are accepted
               </Text>
-            </TouchableOpacity>
+            </View> */}
+
+            <Button
+              label="Create account"
+              onPress={handleRegister}
+              loading={loading}
+              size="lg"
+              className="mb-4"
+            />
+
+            <View className="flex-row justify-center items-center gap-1">
+              <Text className="text-gray-500 text-sm">
+                Already have an account?
+              </Text>
+              <TouchableOpacity onPress={() => router.push("/(auth)/login")}>
+                <Text className="text-gray-900 text-sm font-semibold">
+                  Sign in
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </ScrollView>

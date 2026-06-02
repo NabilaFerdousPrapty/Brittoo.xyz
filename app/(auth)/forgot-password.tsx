@@ -3,6 +3,7 @@ import { router } from "expo-router";
 import React, { useState } from "react";
 import {
   Alert,
+  Image,
   KeyboardAvoidingView,
   Platform,
   Text,
@@ -41,91 +42,108 @@ export default function ForgotPasswordScreen() {
 
   if (sent) {
     return (
-      <View className="flex-1 bg-[#0a0a14] px-6 pt-14 pb-8 items-center justify-center">
-        <View className="w-20 h-20 bg-[#00d4aa]/20 border border-[#00d4aa]/40 rounded-full items-center justify-center mb-6">
-          <Ionicons name="checkmark-circle-outline" size={40} color="#00d4aa" />
+      <View className="flex-1 bg-gray-50 items-center justify-center px-6">
+        <View className="bg-white rounded-3xl shadow-xl p-8 w-full max-w-md border border-gray-100 items-center">
+          <Image
+            source={require("../../assets/images/brittoo-logo.png")}
+            style={{ width: 160, height: 60 }}
+            resizeMode="contain"
+            className="mb-6"
+          />
+          <View className="w-20 h-20 bg-green-100 rounded-full items-center justify-center mb-6">
+            <Ionicons name="checkmark" size={40} color="#16a34a" />
+          </View>
+          <Text className="text-gray-800 text-2xl font-bold text-center mb-3">
+            Check your inbox
+          </Text>
+          <Text className="text-gray-500 text-sm text-center leading-6 mb-8">
+            If an account exists for{" "}
+            <Text className="text-gray-900 font-medium">{email}</Text>, we've
+            sent a password reset link. It expires in 15 minutes.
+          </Text>
+          <Button
+            label="Back to Login"
+            onPress={() => router.replace("/(auth)/login")}
+            variant="ghost"
+            size="lg"
+          />
         </View>
-        <Text className="text-[#f1f5f9] text-2xl font-bold text-center mb-3">
-          Check your inbox
-        </Text>
-        <Text className="text-[#6b7280] text-sm text-center leading-6 mb-8">
-          If an account exists for{" "}
-          <Text className="text-[#8b84ff]">{email}</Text>, we've sent a password
-          reset link. It expires in 15 minutes.
-        </Text>
-        <Button
-          label="Back to Login"
-          onPress={() => router.replace("/(auth)/login")}
-          variant="ghost"
-          size="lg"
-        />
       </View>
     );
   }
 
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-[#0a0a14]"
+      className="flex-1 bg-gray-50"
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <View className="flex-1 px-6 pt-14 pb-8">
-        <TouchableOpacity
-          onPress={() => router.back()}
-          className="mb-8 self-start"
-        >
-          <Ionicons name="arrow-back" size={24} color="#6c63ff" />
-        </TouchableOpacity>
+      <View className="flex-1 justify-center px-4 py-10">
+        <View className="bg-white rounded-3xl shadow-xl px-6 py-8 border border-gray-100">
+          {/* Back button */}
+          <TouchableOpacity
+            onPress={() => router.back()}
+            className="mb-6 self-start"
+          >
+            <Ionicons name="arrow-back" size={24} color="#6b7280" />
+          </TouchableOpacity>
 
-        <View className="w-16 h-16 bg-[#6c63ff]/20 border border-[#6c63ff]/40 rounded-3xl items-center justify-center mb-6">
-          <Ionicons name="key-outline" size={28} color="#6c63ff" />
-        </View>
+          {/* Brittoo Logo */}
+          <View className="items-center mb-6">
+            <Image
+              source={require("../../assets/images/brittoo-logo.png")}
+              style={{ width: 160, height: 60 }}
+              resizeMode="contain"
+            />
+          </View>
 
-        <Text className="text-[#f1f5f9] text-3xl font-bold mb-2">
-          Forgot password?
-        </Text>
-        <Text className="text-[#6b7280] text-sm mb-10 leading-6">
-          No worries! Enter your university email and we'll send you a reset
-          link.
-        </Text>
+          <Text className="text-gray-800 text-2xl font-bold text-center mb-2">
+            Forgot password?
+          </Text>
+          <Text className="text-gray-500 text-sm text-center mb-8 leading-6">
+            No worries! Enter your university email and we'll send you a reset
+            link.
+          </Text>
 
-        <Input
-          label="University Email"
-          placeholder="your@university.edu"
-          leftIcon="mail-outline"
-          value={email}
-          onChangeText={setEmail}
-          error={error}
-          keyboardType="email-address"
-          autoComplete="email"
-        />
-
-        <View className="bg-[#1a1a2e] border border-[#2a2a40] rounded-xl p-3 mb-8 flex-row items-center gap-2">
-          <Ionicons
-            name="information-circle-outline"
-            size={14}
-            color="#6b7280"
+          <Input
+            label="University Email"
+            placeholder="your@university.edu"
+            leftIcon="mail-outline"
+            value={email}
+            onChangeText={setEmail}
+            error={error}
+            keyboardType="email-address"
+            autoComplete="email"
           />
-          <Text className="text-[#6b7280] text-xs flex-1">
-            Maximum 3 reset requests per 24 hours
-          </Text>
+
+          {/* Info card */}
+          <View className="flex-row items-start gap-2 bg-blue-50/30 border border-blue-100 rounded-xl p-3 mb-8">
+            <Ionicons
+              name="information-circle-outline"
+              size={14}
+              color="#6b7280"
+            />
+            <Text className="text-gray-500 text-xs flex-1 leading-5">
+              Maximum 3 reset requests per 24 hours
+            </Text>
+          </View>
+
+          <Button
+            label="Send Reset Link"
+            onPress={handleSubmit}
+            loading={loading}
+            size="lg"
+            className="mb-4 bg-[#16A34A] border-[#16A34A] shadow-md"
+          />
+
+          <TouchableOpacity
+            className="items-center"
+            onPress={() => router.push("/(auth)/login")}
+          >
+            <Text className="text-green-500 text-sm font-medium">
+              Back to sign in
+            </Text>
+          </TouchableOpacity>
         </View>
-
-        <Button
-          label="Send Reset Link"
-          onPress={handleSubmit}
-          loading={loading}
-          size="lg"
-          className="mb-4"
-        />
-
-        <TouchableOpacity
-          className="items-center"
-          onPress={() => router.push("/(auth)/login")}
-        >
-          <Text className="text-[#6c63ff] text-sm font-medium">
-            Back to sign in
-          </Text>
-        </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
   );

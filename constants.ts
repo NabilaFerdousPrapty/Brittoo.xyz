@@ -1,8 +1,8 @@
-export const API_BASE_URL = "https://localhost:5000"; // 🔁 Replace with your backend URL
+export const API_BASE_URL = "https://localhost:5000";
 
 export const STORAGE_KEYS = {
-  TOKEN: "brittoo_token",
-  USER: "brittoo_user",
+  TOKEN: "auth_token",
+  USER: "user_data",
 };
 
 export const APP_NAME = "Brittoo";
