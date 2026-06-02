@@ -1,60 +1,66 @@
 // hooks/api.ts
 import axios from "axios";
+import Constants from "expo-constants";
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 import { STORAGE_KEYS } from "../constants";
 
 // -----------------------------------------------------------------------------
-// 1. Dynamic base URL for different environments
+// Get the correct backend URL based on environment
 // -----------------------------------------------------------------------------
-const getBaseUrl = (): string => {
-  // For web: use localhost (running on same machine)
-  if (Platform.OS === "web") {
-    return "http://localhost:5000";
+const MY_COMPUTER_IP = "192.168.31.223";
+
+const getBackendUrl = (): string => {
+  // Web: localhost works
+  if (Platform.OS === "web") return "http://localhost:5000";
+
+  // For physical devices (iOS/Android) running Expo Go
+  if (Platform.OS === "android" || Platform.OS === "ios") {
+    // Try to get IP from Expo debugger host
+    const debuggerHost =
+      Constants.manifest?.debuggerHost || Constants.expoConfig?.hostUri;
+    if (debuggerHost) {
+      const ip = debuggerHost.split(":")[0];
+      return `http://${ip}:5000`;
+    }
+    // Fallback to your hardcoded IP (most reliable)
+    return `http://${MY_COMPUTER_IP}:5000`;
   }
-  // For Android emulator: 10.0.2.2 maps to host's localhost
-  if (Platform.OS === "android") {
-    return "http://10.0.2.2:5000";
-  }
-  // For iOS simulator (or any other): localhost works
+
+  // Simulator fallback
   return "http://localhost:5000";
 };
 
+const BACKEND_URL = "http://192.168.31.223:5000";
+
 const api = axios.create({
-  baseURL: getBaseUrl(),
+  baseURL: BACKEND_URL,
   headers: { "Content-Type": "application/json" },
   timeout: 15000,
 });
 
-// -----------------------------------------------------------------------------
-// 2. Attach auth token to every request
-// -----------------------------------------------------------------------------
-api.interceptors.request.use(async (config) => {
-  const token = await SecureStore.getItemAsync(STORAGE_KEYS.TOKEN);
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+// Optional: log all requests for debugging
+api.interceptors.request.use((config) => {
+  console.log(
+    `📤 ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`,
+  );
   return config;
 });
 
-// -----------------------------------------------------------------------------
-// 3. Auth endpoints (exact paths matching backend)
-// -----------------------------------------------------------------------------
-export interface RegisterPayload {
+// Attach auth token
+api.interceptors.request.use(async (config) => {
+  const token = await SecureStore.getItemAsync(STORAGE_KEYS.TOKEN);
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+export const registerUser = (data: {
   name: string;
   email: string;
   password: string;
   latitude?: number;
   longitude?: number;
   ipAddress?: string;
-}
-
-export const registerUser = (data: {
-  name: string;
-  email: string;
-  password: string;
 }) => {
-  // Endpoint: POST /api/v1/auth/register (works with curl)
   return api.post("/api/v1/auth/register", data);
 };
 

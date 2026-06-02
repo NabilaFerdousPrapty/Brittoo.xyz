@@ -91,6 +91,7 @@ export default function VerifyOTPScreen() {
         );
       }
     } catch (err: any) {
+      // Show specific error message from backend
       const msg = err?.response?.data?.message || "Verification failed";
       Alert.alert("Error", msg);
       setOtp(["", "", "", "", ""]);
@@ -128,90 +129,94 @@ export default function VerifyOTPScreen() {
 
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-[#0a0a14]"
+      className="flex-1 bg-gray-50"
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <View className="flex-1 px-6 pt-14 pb-8">
-        <TouchableOpacity
-          onPress={() => router.back()}
-          className="mb-8 self-start"
-        >
-          <Ionicons name="arrow-back" size={24} color="#6c63ff" />
-        </TouchableOpacity>
+      <View className="flex-1 justify-center px-4 py-10">
+        {/* Card container */}
+        <View className="bg-white rounded-3xl shadow-xl px-6 py-8 border border-gray-100">
+          {/* Back button */}
+          <TouchableOpacity
+            onPress={() => router.back()}
+            className="mb-4 self-start"
+          >
+            <Ionicons name="arrow-back" size={24} color="#6b7280" />
+          </TouchableOpacity>
 
-        {/* Icon */}
-        <View className="w-16 h-16 bg-[#6c63ff]/20 border border-[#6c63ff]/40 rounded-3xl items-center justify-center mb-6">
-          <Ionicons name="mail-open-outline" size={28} color="#6c63ff" />
-        </View>
+          {/* Email icon */}
+          <View className="w-16 h-16 bg-gray-100 rounded-full items-center justify-center mb-6 self-center">
+            <Ionicons name="mail-outline" size={28} color="#6b7280" />
+          </View>
 
-        <Text className="text-[#f1f5f9] text-3xl font-bold mb-2">
-          Check your email
-        </Text>
-        <Text className="text-[#6b7280] text-sm mb-2">
-          We sent a 5-digit code to
-        </Text>
-        <Text className="text-[#8b84ff] text-sm font-semibold mb-10">
-          {maskedEmail}
-        </Text>
-
-        {/* OTP Boxes */}
-        <View className="flex-row justify-between gap-3 mb-8">
-          {otp.map((digit, idx) => (
-            <TextInput
-              key={idx}
-              ref={(r) => {
-                inputs.current[idx] = r;
-              }}
-              className={`flex-1 aspect-square text-center text-[#f1f5f9] text-2xl font-bold rounded-2xl border ${
-                digit
-                  ? "border-[#6c63ff] bg-[#6c63ff]/10"
-                  : "border-[#2a2a40] bg-[#12121f]"
-              }`}
-              maxLength={1}
-              keyboardType="numeric"
-              value={digit}
-              onChangeText={(v) => handleChange(v, idx)}
-              onKeyPress={({ nativeEvent }) =>
-                handleBackspace(nativeEvent.key, idx)
-              }
-              selectTextOnFocus
-            />
-          ))}
-        </View>
-
-        <Button
-          label="Verify Email"
-          onPress={handleVerify}
-          loading={loading}
-          size="lg"
-          className="mb-6"
-        />
-
-        {/* Resend */}
-        <View className="items-center">
-          <Text className="text-[#6b7280] text-sm mb-2">
-            Didn't receive the code?
+          <Text className="text-gray-800 text-2xl font-bold text-center mb-2">
+            Check your email
           </Text>
-          {canResend ? (
-            <TouchableOpacity onPress={handleResend} disabled={resendLoading}>
-              <Text className="text-[#6c63ff] text-sm font-semibold">
-                {resendLoading ? "Sending..." : "Resend Code"}
-              </Text>
-            </TouchableOpacity>
-          ) : (
-            <Text className="text-[#6b7280] text-sm">
-              Resend in{" "}
-              <Text className="text-[#f1f5f9] font-semibold">{countdown}s</Text>
+          <Text className="text-gray-500 text-sm text-center mb-1">
+            We sent a 5-digit code to
+          </Text>
+          <Text className="text-gray-900 text-sm font-semibold text-center mb-8">
+            {maskedEmail}
+          </Text>
+
+          {/* OTP Boxes */}
+          <View className="flex-row justify-between gap-3 mb-8">
+            {otp.map((digit, idx) => (
+              <TextInput
+                key={idx}
+                ref={(r) => (inputs.current[idx] = r)}
+                className={`flex-1 aspect-square text-center text-gray-800 text-2xl font-bold rounded-2xl border ${
+                  digit
+                    ? "border-green-500 bg-green-50"
+                    : "border-gray-200 bg-white"
+                }`}
+                maxLength={1}
+                keyboardType="numeric"
+                value={digit}
+                onChangeText={(v) => handleChange(v, idx)}
+                onKeyPress={({ nativeEvent }) =>
+                  handleBackspace(nativeEvent.key, idx)
+                }
+                selectTextOnFocus
+              />
+            ))}
+          </View>
+
+          <Button
+            label="Verify Email"
+            onPress={handleVerify}
+            loading={loading}
+            size="lg"
+            className="mb-6"
+          />
+
+          {/* Resend section */}
+          <View className="items-center">
+            <Text className="text-gray-500 text-sm mb-2">
+              Didn't receive the code?
             </Text>
-          )}
-        </View>
+            {canResend ? (
+              <TouchableOpacity onPress={handleResend} disabled={resendLoading}>
+                <Text className="text-gray-900 text-sm font-semibold">
+                  {resendLoading ? "Sending..." : "Resend Code"}
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <Text className="text-gray-500 text-sm">
+                Resend in{" "}
+                <Text className="text-gray-900 font-semibold">
+                  {countdown}s
+                </Text>
+              </Text>
+            )}
+          </View>
 
-        {/* Expiry notice */}
-        <View className="mt-8 bg-[#f59e0b]/10 border border-[#f59e0b]/30 rounded-xl p-3 flex-row items-center gap-2">
-          <Ionicons name="time-outline" size={14} color="#f59e0b" />
-          <Text className="text-[#f59e0b] text-xs flex-1">
-            This code expires in 5 minutes
-          </Text>
+          {/* Expiry notice */}
+          <View className="mt-8 bg-yellow-50 border border-yellow-200 rounded-xl p-3 flex-row items-center gap-2">
+            <Ionicons name="time-outline" size={14} color="#ca8a04" />
+            <Text className="text-yellow-700 text-xs flex-1">
+              This code expires in 5 minutes
+            </Text>
+          </View>
         </View>
       </View>
     </KeyboardAvoidingView>

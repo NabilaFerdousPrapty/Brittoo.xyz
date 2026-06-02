@@ -45,7 +45,17 @@ export default function RegisterScreen() {
     setErrors(e);
     return Object.keys(e).length === 0;
   };
-
+  fetch("http://192.168.31.223:5000/api/v1/auth/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      name: "test",
+      email: "test@test.com",
+      password: "123456",
+    }),
+  })
+    .then((res) => console.log("Fetch OK", res.status))
+    .catch((err) => console.log("Fetch error", err.message));
   const handleRegister = async () => {
     if (!validate()) return;
     setLoading(true);
@@ -62,10 +72,20 @@ export default function RegisterScreen() {
         });
       }
     } catch (err: any) {
-      const msg =
-        err?.response?.data?.message ||
-        "Registration failed. Please try again.";
-      Alert.alert("Error", msg);
+      let errorMessage = "Registration failed. Please try again.";
+
+      // 🔍 Show the real backend message
+      if (err?.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      }
+      // Network errors (Docker unreachable)
+      else if (err.message === "Network Error") {
+        errorMessage = `Cannot connect to backend.\n\nMake sure:\n• Docker container is running (docker ps)\n• Port 5000 is mapped (-p 5000:5000)\n• Android emulator uses 10.0.2.2`;
+      } else if (err.code === "ECONNREFUSED") {
+        errorMessage = "Connection refused. Is the backend running?";
+      }
+
+      Alert.alert("Registration Error", errorMessage);
     } finally {
       setLoading(false);
     }
