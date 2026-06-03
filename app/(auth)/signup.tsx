@@ -45,17 +45,7 @@ export default function RegisterScreen() {
     setErrors(e);
     return Object.keys(e).length === 0;
   };
-  fetch("http://192.168.31.223:5000/api/v1/auth/register", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      name: "test",
-      email: "test@test.com",
-      password: "123456",
-    }),
-  })
-    .then((res) => console.log("Fetch OK", res.status))
-    .catch((err) => console.log("Fetch error", err.message));
+
   const handleRegister = async () => {
     if (!validate()) return;
     setLoading(true);
