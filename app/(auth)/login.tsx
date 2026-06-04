@@ -43,7 +43,7 @@ export default function LoginScreen() {
           JSON.stringify(res.data.user),
         );
         // Navigate to main app
-        router.replace("/(tabs)/browse");
+        router.replace("/dashboard");
       } else {
         // In case success is false (shouldn't happen with proper backend)
         Alert.alert("Login failed", res.data.message || "Unknown error");

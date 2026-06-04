@@ -1,26 +1,8 @@
-import { Stack, router } from "expo-router";
-import * as SecureStore from "expo-secure-store";
-import { StatusBar } from "expo-status-bar";
-import { useEffect } from "react";
-import { STORAGE_KEYS } from "../constants";
 import "../global.css";
+import { Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 
 export default function RootLayout() {
-  useEffect(() => {
-    checkSession();
-  }, []);
-
-  const checkSession = async () => {
-    try {
-      const token = await SecureStore.getItemAsync(STORAGE_KEYS.TOKEN);
-      if (!token) {
-        router.replace("/");
-      }
-    } catch {
-      router.replace("/");
-    }
-  };
-
   return (
     <>
       <StatusBar style="dark" backgroundColor="#ffffff" />
@@ -38,7 +20,12 @@ export default function RootLayout() {
         <Stack.Screen name="(auth)/forgot-password" />
         <Stack.Screen name="(auth)/reset-password" />
         <Stack.Screen name="(auth)/verify-identity" />
-        <Stack.Screen name="(tabs)/browse.tsx" />
+        <Stack.Screen name="dashboard" />
+        {/* Product screens */}
+        <Stack.Screen name="(products)/index" />
+        <Stack.Screen name="(products)/[id]" />
+        <Stack.Screen name="(products)/create" />
+        <Stack.Screen name="(products)/edit" />
       </Stack>
     </>
   );

@@ -85,7 +85,7 @@ export default function VerifyOTPScreen() {
           [
             {
               text: "Continue",
-              onPress: () => router.replace("/(tabs)/browse"),
+              onPress: () => router.replace("/dashboard"),
             },
           ],
         );

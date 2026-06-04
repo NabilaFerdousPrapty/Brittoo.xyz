@@ -31,7 +31,7 @@ const getBackendUrl = (): string => {
   return "http://localhost:5000";
 };
 
-const BACKEND_URL = "http://192.168.31.223:5000";
+export const BACKEND_URL = "http://192.168.31.223:5000";
 
 const api = axios.create({
   baseURL: BACKEND_URL,
@@ -111,7 +111,7 @@ export const verifyUserDocuments = async (
     type: "image/jpeg",
   } as any);
 
-  return api.post("/auth/verify-user", formData, {
+  return api.post("/api/v1/auth/verify-user", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
 };
@@ -203,7 +203,7 @@ export interface CreateProductPayload {
 }
 
 export const getProducts = (params: GetProductsParams = {}) =>
-  api.get("/products", { params });
+  api.get("/api/v1/products", { params });
 
 export const createProduct = async (
   payload: CreateProductPayload,
@@ -214,12 +214,13 @@ export const createProduct = async (
     if (v !== undefined) formData.append(k, v as string);
   });
   images.forEach((img) => formData.append("productImages", img as any));
-  return api.post("/products", formData, {
+  return api.post("/api/v1/products", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
 };
 
-export const deleteProduct = (id: string) => api.delete(`/products/${id}`);
+export const deleteProduct = (id: string) =>
+  api.delete(`/api/v1/products/${id}`);
 
 export const updateProductUser = (
   id: string,
@@ -233,4 +234,198 @@ export const updateProductUser = (
     latitude?: number;
     longitude?: number;
   },
-) => api.put(`/products/update/user/${id}`, data);
+) => api.put(`/api/v1/products/update/user/${id}`, data);
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  roll: string;
+  role: string;
+  isVerified: "UNVERIFIED" | "PENDING" | "VERIFIED";
+  brittooVerified: boolean;
+  isSuspended: boolean;
+  suspensionCount: number;
+  securityScore: number;
+  emailVerified: boolean;
+  isValidRuetMail: boolean;
+  phoneNumber?: string;
+  selfie?: string;
+  idCardFront?: string;
+  idCardBack?: string;
+  latitude?: string;
+  longitude?: string;
+  ipAddress?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// GET /users (admin)
+export interface GetAllUsersParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: "ALL" | "VERIFIED" | "PENDING" | "UNVERIFIED" | "SUSPENDED";
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+}
+
+export interface UsersResponse {
+  success: true;
+  data: {
+    users: User[];
+    pagination: {
+      currentPage: number;
+      totalPages: number;
+      totalUsers: number;
+      limit: number;
+    };
+    summary: {
+      totalUsers: number;
+      verified: number;
+      pending: number;
+      unverified: number;
+      brittooVerified: number;
+      suspended: number;
+    };
+  };
+}
+
+// GET /users/:userId
+export interface UserDetailsResponse {
+  success: true;
+  data: {
+    user: User & {
+      bccWallet?: any;
+      redCacheCredits: any[];
+      rentedOutProducts: any[];
+      borrowedProducts: any[];
+      rentalRequestsMade: any[];
+      rentalRequestsReceived: any[];
+    };
+    walletSummary: {
+      availableBalance: number;
+      lockedBalance: number;
+      totalBalance: number;
+    };
+    creditSummary: {
+      totalRedCredits: number;
+      totalRedCreditsInUse: number;
+      availableRedCredits: number;
+    };
+    rentalStats: {
+      totalRentalsCompleted: number;
+      totalRentalsActive: number;
+      totalRentalsCancelled: number;
+      totalEarnings: number;
+      totalSpent: number;
+    };
+    locationInfo: any;
+    documentStatus: any;
+    stats: any;
+  };
+}
+
+// PATCH /users/:userId/verify
+export interface VerifyUserResponse {
+  success: true;
+  message: string;
+  data: { user: User };
+}
+
+// PATCH /users/:userId/suspend
+export interface SuspendUserResponse {
+  success: true;
+  message: string;
+  data: User;
+}
+
+// GET /users/:userId/credits
+export interface UserCreditHistoryResponse {
+  success: true;
+  data: {
+    bccWallet: any;
+    redCacheCredits: any[];
+    bccTransactions: any[];
+    rentalHistory: any[];
+    summary: {
+      bcc: any;
+      rcc: any;
+      rentals: any;
+    };
+  };
+}
+
+// GET /users/:userId/placed-requests
+export interface PlacedRequestsResponse {
+  success: true;
+  data: any[];
+}
+
+// GET /users/:userId/received-requests
+export interface ReceivedRequestsResponse {
+  success: true;
+  data: any[];
+}
+
+// GET /users/:userId/withdrawals
+export interface WithdrawalRequestsResponse {
+  success: true;
+  data: any[];
+}
+
+// ========== API FUNCTIONS ==========
+
+export const adminGetAllUsers = async (params: GetAllUsersParams = {}) => {
+  const response = await api.get<UsersResponse>("/api/v1/users", { params });
+  return response.data;
+};
+
+export const adminGetUserDetails = async (userId: string) => {
+  const response = await api.get<UserDetailsResponse>(
+    `/api/v1/users/${userId}`,
+  );
+  return response.data;
+};
+
+export const adminVerifyUser = async (userId: string) => {
+  const response = await api.patch<VerifyUserResponse>(
+    `/api/v1/users/${userId}/verify`,
+  );
+  return response.data;
+};
+
+export const adminSuspendUser = async (userId: string) => {
+  const response = await api.patch<SuspendUserResponse>(
+    `/api/v1/users/${userId}/suspend`,
+  );
+  return response.data;
+};
+
+export const adminGetUserCreditHistory = async (userId: string) => {
+  const response = await api.get<UserCreditHistoryResponse>(
+    `/api/v1/users/${userId}/credits`,
+  );
+  return response.data;
+};
+
+export const adminGetUserPlacedRequests = async (userId: string) => {
+  const response = await api.get<PlacedRequestsResponse>(
+    `/api/v1/users/${userId}/placed-requests`,
+  );
+  return response.data;
+};
+
+export const adminGetUserReceivedRequests = async (userId: string) => {
+  const response = await api.get<ReceivedRequestsResponse>(
+    `/api/v1/users/${userId}/received-requests`,
+  );
+  return response.data;
+};
+
+export const adminGetUserWithdrawalRequests = async (userId: string) => {
+  const response = await api.get<WithdrawalRequestsResponse>(
+    `/api/v1/users/${userId}/withdrawals`,
+  );
+  return response.data;
+};
