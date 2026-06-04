@@ -117,3 +117,120 @@ export const verifyUserDocuments = async (
 };
 
 export default api;
+
+export interface GetProductsParams {
+  search?: string;
+  productType?: string;
+  productCondition?: string;
+  productAge?: number;
+  ownerId?: string;
+  page?: number;
+  limit?: number;
+  productId?: string;
+  productSL?: string;
+  latitude?: number;
+  longitude?: number;
+  prompt?: string;
+}
+
+export interface Product {
+  id: string;
+  productSL: string;
+  name: string;
+  productType:
+    | "GADGET"
+    | "FURNITURE"
+    | "VEHICLE"
+    | "STATIONARY"
+    | "MUSICAL_INSTRUMENT"
+    | "CLOTHING"
+    | "BOOK"
+    | "ACADEMIC_BOOK"
+    | "ELECTRONICS"
+    | "APARTMENTS"
+    | "OTHERS";
+  productCondition: "NEW" | "LIKE_NEW" | "GOOD" | "FAIR" | "POOR";
+  productAge: number;
+  omv: number;
+  pricePerDay: number;
+  pricePerHour: number | null;
+  secondHandPrice: number;
+  askingPrice: number | null;
+  minPrice: number | null;
+  isForSale: boolean;
+  isForSaleOnly: boolean;
+  isAvailable: boolean;
+  isOnHold: boolean;
+  isAiEnabled: boolean;
+  latitude: number;
+  longitude: number;
+  tags: string;
+  productDescription: string;
+  productImages: string[];
+  optimizedImages: string[];
+  scale: number;
+  ownerId: string;
+  owner: {
+    id: string;
+    name: string;
+    email: string;
+    securityScore: string;
+    brittooVerified: boolean;
+    suspensionCount: number;
+    isValidRuetMail: boolean;
+    isVerified: string;
+    _count: { rentedOutProducts: number; borrowedProducts: number };
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateProductPayload {
+  name: string;
+  productType: string;
+  productCondition: string;
+  productAge: string;
+  omv: string;
+  tags: string;
+  productDescription: string;
+  isForSale: string;
+  isForSaleOnly: string;
+  isAiEnabled?: string;
+  askingPrice?: string;
+  minPrice?: string;
+  latitude?: string;
+  longitude?: string;
+}
+
+export const getProducts = (params: GetProductsParams = {}) =>
+  api.get("/products", { params });
+
+export const createProduct = async (
+  payload: CreateProductPayload,
+  images: { uri: string; name: string; type: string }[],
+) => {
+  const formData = new FormData();
+  Object.entries(payload).forEach(([k, v]) => {
+    if (v !== undefined) formData.append(k, v as string);
+  });
+  images.forEach((img) => formData.append("productImages", img as any));
+  return api.post("/products", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+};
+
+export const deleteProduct = (id: string) => api.delete(`/products/${id}`);
+
+export const updateProductUser = (
+  id: string,
+  data: {
+    isForSale?: boolean;
+    isForSaleOnly?: boolean;
+    isAvailable?: boolean;
+    isAiEnabled?: boolean;
+    askingPrice?: string;
+    minPrice?: string;
+    latitude?: number;
+    longitude?: number;
+  },
+) => api.put(`/products/update/user/${id}`, data);
