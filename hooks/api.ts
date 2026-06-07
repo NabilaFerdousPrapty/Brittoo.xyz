@@ -374,58 +374,112 @@ export interface WithdrawalRequestsResponse {
   data: any[];
 }
 
-// ========== API FUNCTIONS ==========
+// ─── Admin — Users ────────────────────────────────────────────────────────────
 
-export const adminGetAllUsers = async (params: GetAllUsersParams = {}) => {
-  const response = await api.get<UsersResponse>("/api/v1/users", { params });
-  return response.data;
+export interface GetUsersParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: "ALL" | "VERIFIED" | "PENDING" | "UNVERIFIED" | "SUSPENDED";
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+}
+
+export const adminGetUsers = (params: GetUsersParams = {}) =>
+  api.get("/users", { params });
+
+export const adminGetUserDetails = (userId: string) =>
+  api.get(`/users/${userId}`);
+
+export const adminVerifyUser = (userId: string) =>
+  api.put(`/users/verify/${userId}`, {});
+
+export const adminSuspendUser = (userId: string) =>
+  api.put(`/users/suspend/${userId}`, {});
+
+export const adminGetUserCreditHistory = (userId: string) =>
+  api.get(`/users/${userId}/credit-history`);
+
+export const adminGetUserPlacedRequests = (userId: string) =>
+  api.get(`/users/${userId}/placed-requests`);
+
+export const adminGetUserReceivedRequests = (userId: string) =>
+  api.get(`/users/${userId}/received-requests`);
+
+export const adminGetUserTotalCredits = () => api.get("/users/total-credits");
+
+// ─── Admin — Products ─────────────────────────────────────────────────────────
+
+export interface AdminUpdateProductPayload {
+  name?: string;
+  productType?: string;
+  productCondition?: string;
+  productAge?: string;
+  omv?: string;
+  tags?: string;
+  productDescription?: string;
+  isForSale?: string;
+  scale?: string;
+  deleteImages?: string;
+}
+
+export const adminUpdateProduct = async (
+  id: string,
+  payload: AdminUpdateProductPayload,
+  newImages?: { uri: string; name: string; type: string }[],
+) => {
+  const formData = new FormData();
+  Object.entries(payload).forEach(([k, v]) => {
+    if (v !== undefined) formData.append(k, v as string);
+  });
+  if (newImages?.length) {
+    newImages.forEach((img) => formData.append("productImages", img as any));
+  }
+  return api.put(`/products/update/admin/${id}`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
 };
 
-export const adminGetUserDetails = async (userId: string) => {
-  const response = await api.get<UserDetailsResponse>(
-    `/api/v1/users/${userId}`,
-  );
-  return response.data;
-};
+// ─── Admin — Rental Requests ──────────────────────────────────────────────────
 
-export const adminVerifyUser = async (userId: string) => {
-  const response = await api.patch<VerifyUserResponse>(
-    `/api/v1/users/${userId}/verify`,
-  );
-  return response.data;
-};
+export interface GetRentalRequestsParams {
+  page?: number;
+  limit?: number;
+  status?: string;
+  search?: string;
+  productId?: string;
+  ownerId?: string;
+  requesterId?: string;
+  productSL?: string;
+}
 
-export const adminSuspendUser = async (userId: string) => {
-  const response = await api.patch<SuspendUserResponse>(
-    `/api/v1/users/${userId}/suspend`,
-  );
-  return response.data;
-};
+export const adminGetRentalRequests = (params: GetRentalRequestsParams = {}) =>
+  api.get("/rental-requests/all", { params });
 
-export const adminGetUserCreditHistory = async (userId: string) => {
-  const response = await api.get<UserCreditHistoryResponse>(
-    `/api/v1/users/${userId}/credits`,
-  );
-  return response.data;
-};
+export const adminUpdateRentalStatus = (requestId: string, status: string) =>
+  api.put(`/rental-requests/${requestId}/status`, { status });
 
-export const adminGetUserPlacedRequests = async (userId: string) => {
-  const response = await api.get<PlacedRequestsResponse>(
-    `/api/v1/users/${userId}/placed-requests`,
-  );
-  return response.data;
-};
+export const adminRejectRental = (
+  requestId: string,
+  brittooRejectReason: string,
+) => api.put(`/rental-requests/${requestId}/reject`, { brittooRejectReason });
 
-export const adminGetUserReceivedRequests = async (userId: string) => {
-  const response = await api.get<ReceivedRequestsResponse>(
-    `/api/v1/users/${userId}/received-requests`,
-  );
-  return response.data;
-};
+// ─── Admin — Dashboard Analytics ──────────────────────────────────────────────
 
-export const adminGetUserWithdrawalRequests = async (userId: string) => {
-  const response = await api.get<WithdrawalRequestsResponse>(
-    `/api/v1/users/${userId}/withdrawals`,
-  );
-  return response.data;
-};
+export const adminGetAnalytics = () => api.get("/admin/analytics");
+
+export const adminHoldProduct = (productId: string) =>
+  api.put(`/admin/hold/${productId}`, {});
+
+// ─── Admin — Purchase Requests ────────────────────────────────────────────────
+
+export const adminGetPurchaseRequests = () => api.get("/purchase-requests/all");
+
+export const adminUpdatePurchaseStatus = (requestId: string, status: string) =>
+  api.put(`/purchase-requests/${requestId}/status`, { status });
+
+export const adminUpdatePurchasePayment = (
+  requestId: string,
+  paymentStatus: string,
+) =>
+  api.put(`/purchase-requests/${requestId}/payment-status`, { paymentStatus });
