@@ -1,0 +1,220 @@
+import React, { useEffect, useState } from "react";
+import {
+  View, Text, FlatList, TouchableOpacity,
+  ActivityIndicator, RefreshControl, Modal,
+  ScrollView, Alert,
+} from "react-native";
+import { router } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import {
+  adminGetPurchaseRequests,
+  adminUpdatePurchaseStatus,
+  adminUpdatePurchasePayment,
+} from "../../hooks/api";
+import { useAdminGuard } from "../../hooks/useAdminGuard";
+import { Button } from "../../components/button";
+
+const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
+  PENDING:   { bg: "bg-amber-100",  text: "text-amber-700"  },
+  APPROVED:  { bg: "bg-green-100",  text: "text-green-700"  },
+  REJECTED:  { bg: "bg-red-100",    text: "text-red-700"    },
+  COMPLETED: { bg: "bg-blue-100",   text: "text-blue-700"   },
+};
+
+const PAYMENT_COLORS: Record<string, { bg: string; text: string }> = {
+  UNPAID:  { bg: "bg-gray-100",   text: "text-gray-500"   },
+  PAID:    { bg: "bg-green-100",  text: "text-green-700"  },
+  PARTIAL: { bg: "bg-amber-100",  text: "text-amber-700"  },
+};
+
+function Badge({ status, colorMap }: { status: string; colorMap: Record<string, { bg: string; text: string }> }) {
+  const c = colorMap[status] ?? { bg: "bg-gray-100", text: "text-gray-500" };
+  return (
+    <View className={`px-2 py-0.5 rounded-full ${c.bg}`}>
+      <Text className={`text-[10px] font-medium ${c.text}`}>{status}</Text>
+    </View>
+  );
+}
+
+export default function AdminPurchaseRequestsScreen() {
+  const { ready } = useAdminGuard();
+  const [requests, setRequests]     = useState<any[]>([]);
+  const [loading, setLoading]       = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [selected, setSelected]     = useState<any>(null);
+  const [modal, setModal]           = useState(false);
+  const [acting, setActing]         = useState(false);
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const res = await adminGetPurchaseRequests();
+      setRequests(res.data?.data ?? []);
+    } catch (e) { console.error(e); }
+    finally { setLoading(false); setRefreshing(false); }
+  };
+
+  useEffect(() => { if (ready) load(); }, [ready]);
+
+  const handleStatus = async (status: string) => {
+    setActing(true);
+    try {
+      await adminUpdatePurchaseStatus(selected.id, status);
+      Alert.alert("Updated", `Status: ${status}`);
+      setModal(false);
+      load();
+    } catch (e: any) {
+      Alert.alert("Error", e?.response?.data?.message || "Failed");
+    } finally { setActing(false); }
+  };
+
+  const handlePayment = async (paymentStatus: string) => {
+    setActing(true);
+    try {
+      await adminUpdatePurchasePayment(selected.id, paymentStatus);
+      Alert.alert("Updated", `Payment: ${paymentStatus}`);
+      setModal(false);
+      load();
+    } catch (e: any) {
+      Alert.alert("Error", e?.response?.data?.message || "Failed");
+    } finally { setActing(false); }
+  };
+
+  if (!ready) return null;
+
+  return (
+    <View className="flex-1 bg-white">
+      <View className="pt-14 px-5 pb-4 border-b border-gray-100">
+        <View className="flex-row items-center gap-3">
+          <TouchableOpacity onPress={() => router.back()}>
+            <Ionicons name="arrow-back" size={22} color="#111827" />
+          </TouchableOpacity>
+          <Text className="text-gray-900 text-lg font-semibold">Purchase Requests</Text>
+        </View>
+      </View>
+
+      <FlatList
+        data={requests}
+        keyExtractor={(r) => r.id}
+        contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor="#111827" />
+        }
+        renderItem={({ item: r }) => (
+          <TouchableOpacity
+            onPress={() => { setSelected(r); setModal(true); }}
+            activeOpacity={0.85}
+            className="bg-white border border-gray-100 rounded-2xl p-4 mb-3"
+            style={{ elevation: 1, shadowColor: "#000", shadowOpacity: 0.03, shadowRadius: 3, shadowOffset: { width: 0, height: 1 } }}
+          >
+            <View className="flex-row items-start justify-between mb-2">
+              <Text className="text-gray-900 font-semibold text-sm flex-1 pr-2" numberOfLines={1}>
+                {r.product?.name ?? "—"}
+              </Text>
+              <Badge status={r.status ?? "PENDING"} colorMap={STATUS_COLORS} />
+            </View>
+            <View className="flex-row items-center justify-between">
+              <View className="flex-row items-center gap-1">
+                <Ionicons name="person-outline" size={12} color="#9ca3af" />
+                <Text className="text-gray-400 text-xs">{r.buyer?.name ?? r.requester?.name ?? "—"}</Text>
+              </View>
+              <View className="flex-row gap-2 items-center">
+                {r.paymentStatus && <Badge status={r.paymentStatus} colorMap={PAYMENT_COLORS} />}
+                {r.offerPrice && (
+                  <Text className="text-gray-700 text-xs font-semibold">৳{r.offerPrice}</Text>
+                )}
+              </View>
+            </View>
+            <Text className="text-gray-300 text-xs mt-1.5">
+              {new Date(r.createdAt).toLocaleDateString()}
+            </Text>
+          </TouchableOpacity>
+        )}
+        ListEmptyComponent={
+          !loading ? (
+            <View className="items-center py-20">
+              <Ionicons name="card-outline" size={36} color="#e5e7eb" />
+              <Text className="text-gray-300 text-sm mt-3">No purchase requests</Text>
+            </View>
+          ) : null
+        }
+      />
+
+      {loading && requests.length === 0 && (
+        <View className="absolute inset-0 items-center justify-center bg-white">
+          <ActivityIndicator size="large" color="#111827" />
+        </View>
+      )}
+
+      {/* Detail Modal */}
+      <Modal visible={modal} animationType="slide" presentationStyle="pageSheet">
+        <View className="flex-1 bg-white">
+          <View className="flex-row items-center justify-between px-5 pt-6 pb-4 border-b border-gray-100">
+            <Text className="text-gray-900 text-lg font-semibold">Purchase Detail</Text>
+            <TouchableOpacity onPress={() => setModal(false)}>
+              <Ionicons name="close" size={22} color="#111827" />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
+            {selected && (
+              <>
+                <View className="bg-gray-50 border border-gray-100 rounded-2xl p-4 mb-4">
+                  <Text className="text-gray-400 text-xs uppercase tracking-wider font-medium mb-3">Product</Text>
+                  <Text className="text-gray-900 font-semibold">{selected.product?.name ?? "—"}</Text>
+                  {selected.offerPrice && (
+                    <Text className="text-gray-500 text-sm mt-1">Offer: ৳{selected.offerPrice}</Text>
+                  )}
+                </View>
+
+                <View className="flex-row items-center justify-between bg-gray-50 border border-gray-100 rounded-2xl p-4 mb-4">
+                  <Text className="text-gray-400 text-sm">Request status</Text>
+                  <Badge status={selected.status ?? "PENDING"} colorMap={STATUS_COLORS} />
+                </View>
+
+                {selected.paymentStatus && (
+                  <View className="flex-row items-center justify-between bg-gray-50 border border-gray-100 rounded-2xl p-4 mb-6">
+                    <Text className="text-gray-400 text-sm">Payment status</Text>
+                    <Badge status={selected.paymentStatus} colorMap={PAYMENT_COLORS} />
+                  </View>
+                )}
+
+                <Text className="text-gray-400 text-xs uppercase tracking-wider font-medium mb-3">Update Request Status</Text>
+                {["APPROVED","REJECTED","COMPLETED"].map((s) => (
+                  <TouchableOpacity
+                    key={s}
+                    onPress={() => handleStatus(s)}
+                    disabled={acting || selected.status === s}
+                    className={`border rounded-xl px-4 py-3 mb-2 ${selected.status === s ? "border-gray-900 bg-gray-900" : "border-gray-200 bg-white"}`}
+                  >
+                    <Text className={`text-sm font-medium ${selected.status === s ? "text-white" : "text-gray-700"}`}>
+                      {selected.status === s ? "✓ " : ""}{s}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+
+                {selected.paymentStatus !== undefined && (
+                  <>
+                    <Text className="text-gray-400 text-xs uppercase tracking-wider font-medium mt-4 mb-3">Update Payment Status</Text>
+                    {["UNPAID","PARTIAL","PAID"].map((s) => (
+                      <TouchableOpacity
+                        key={s}
+                        onPress={() => handlePayment(s)}
+                        disabled={acting || selected.paymentStatus === s}
+                        className={`border rounded-xl px-4 py-3 mb-2 ${selected.paymentStatus === s ? "border-gray-900 bg-gray-900" : "border-gray-200 bg-white"}`}
+                      >
+                        <Text className={`text-sm font-medium ${selected.paymentStatus === s ? "text-white" : "text-gray-700"}`}>
+                          {selected.paymentStatus === s ? "✓ " : ""}{s}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </>
+                )}
+              </>
+            )}
+          </ScrollView>
+        </View>
+      </Modal>
+    </View>
+  );
+}

@@ -386,25 +386,25 @@ export interface GetUsersParams {
 }
 
 export const adminGetUsers = (params: GetUsersParams = {}) =>
-  api.get("/users", { params });
+  api.get("/api/v1/users", { params });
 
 export const adminGetUserDetails = (userId: string) =>
-  api.get(`/users/${userId}`);
+  api.get(`/api/v1/users/${userId}`);
 
 export const adminVerifyUser = (userId: string) =>
-  api.put(`/users/verify/${userId}`, {});
+  api.put(`/api/v1/users/verify/${userId}`, {});
 
 export const adminSuspendUser = (userId: string) =>
-  api.put(`/users/suspend/${userId}`, {});
+  api.put(`/api/v1/users/suspend/${userId}`, {});
 
 export const adminGetUserCreditHistory = (userId: string) =>
-  api.get(`/users/${userId}/credit-history`);
+  api.get(`/api/v1/users/${userId}/credit-history`);
 
 export const adminGetUserPlacedRequests = (userId: string) =>
-  api.get(`/users/${userId}/placed-requests`);
+  api.get(`/api/v1/users/${userId}/placed-requests`);
 
 export const adminGetUserReceivedRequests = (userId: string) =>
-  api.get(`/users/${userId}/received-requests`);
+  api.get(`/api/v1/users/${userId}/received-requests`);
 
 export const adminGetUserTotalCredits = () => api.get("/users/total-credits");
 
@@ -435,7 +435,7 @@ export const adminUpdateProduct = async (
   if (newImages?.length) {
     newImages.forEach((img) => formData.append("productImages", img as any));
   }
-  return api.put(`/products/update/admin/${id}`, formData, {
+  return api.put(`/api/v1/products/update/admin/${id}`, formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
 };
@@ -454,32 +454,31 @@ export interface GetRentalRequestsParams {
 }
 
 export const adminGetRentalRequests = (params: GetRentalRequestsParams = {}) =>
-  api.get("/rental-requests/all", { params });
+  api.get("/api/v1/rental-requests/all", { params });
 
 export const adminUpdateRentalStatus = (requestId: string, status: string) =>
-  api.put(`/rental-requests/${requestId}/status`, { status });
+  api.put(`/api/v1/rental-requests/${requestId}/status`, { status });
 
-export const adminRejectRental = (
-  requestId: string,
-  brittooRejectReason: string,
-) => api.put(`/rental-requests/${requestId}/reject`, { brittooRejectReason });
+export const adminRejectRental = (requestId: string, brittooRejectReason: string) =>
+  api.put(`/api/v1/rental-requests/${requestId}/reject`, {
+    brittooRejectReason,
+  });
 
 // ─── Admin — Dashboard Analytics ──────────────────────────────────────────────
 
 export const adminGetAnalytics = () => api.get("/admin/analytics");
 
 export const adminHoldProduct = (productId: string) =>
-  api.put(`/admin/hold/${productId}`, {});
+  api.put(`/api/v1/admin/hold/${productId}`, {});
 
 // ─── Admin — Purchase Requests ────────────────────────────────────────────────
 
 export const adminGetPurchaseRequests = () => api.get("/purchase-requests/all");
 
 export const adminUpdatePurchaseStatus = (requestId: string, status: string) =>
-  api.put(`/purchase-requests/${requestId}/status`, { status });
+  api.put(`/api/v1/purchase-requests/${requestId}/status`, { status });
 
-export const adminUpdatePurchasePayment = (
-  requestId: string,
-  paymentStatus: string,
-) =>
-  api.put(`/purchase-requests/${requestId}/payment-status`, { paymentStatus });
+export const adminUpdatePurchasePayment = (requestId: string, paymentStatus: string) =>
+  api.put(`/api/v1/purchase-requests/${requestId}/payment-status`, {
+    paymentStatus,
+  });

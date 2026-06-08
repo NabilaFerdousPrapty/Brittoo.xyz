@@ -14,7 +14,7 @@ export const useAdminGuard = () => {
     (async () => {
       const userStr = await SecureStore.getItemAsync(STORAGE_KEYS.USER);
       if (!userStr) {
-        router.replace("/(auth)/login");
+        router.replace("/api/v1/(auth)/login");
         return;
       }
       const user = JSON.parse(userStr);
