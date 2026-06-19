@@ -459,7 +459,10 @@ export const adminGetRentalRequests = (params: GetRentalRequestsParams = {}) =>
 export const adminUpdateRentalStatus = (requestId: string, status: string) =>
   api.put(`/api/v1/rental-requests/${requestId}/status`, { status });
 
-export const adminRejectRental = (requestId: string, brittooRejectReason: string) =>
+export const adminRejectRental = (
+  requestId: string,
+  brittooRejectReason: string,
+) =>
   api.put(`/api/v1/rental-requests/${requestId}/reject`, {
     brittooRejectReason,
   });
@@ -478,7 +481,63 @@ export const adminGetPurchaseRequests = () => api.get("/purchase-requests/all");
 export const adminUpdatePurchaseStatus = (requestId: string, status: string) =>
   api.put(`/api/v1/purchase-requests/${requestId}/status`, { status });
 
-export const adminUpdatePurchasePayment = (requestId: string, paymentStatus: string) =>
+export const adminUpdatePurchasePayment = (
+  requestId: string,
+  paymentStatus: string,
+) =>
   api.put(`/api/v1/purchase-requests/${requestId}/payment-status`, {
     paymentStatus,
   });
+
+// ─── User Dashboard ────────────────────────────────────────────────────────────
+// Matches: GET /overview, GET /credits/credit-history (verifyToken protected)
+
+export interface UserOverviewResponse {
+  success: boolean;
+  message: string;
+  data: {
+    user: {
+      id: string;
+      name: string;
+      email: string;
+      roll: string;
+      phoneNumber: string | null;
+      selfie: string | null;
+      idCardFront: string | null;
+      idCardBack: string | null;
+      role: string;
+      emailVerified: boolean;
+      isVerified: "UNVERIFIED" | "PENDING" | "VERIFIED";
+      brittooVerified: boolean;
+      securityScore: string;
+      isSuspended: boolean;
+      suspensionCount: number;
+      createdAt: string;
+      updatedAt: string;
+      isValidRuetMail: boolean;
+    };
+    wallet: {
+      availableBalance: number;
+      lockedBalance: number;
+    } | null;
+    stats: {
+      activeRentals: number;
+      productsListed: number;
+      totalRccCredits: number;
+      pendingRequestsCount: number;
+    };
+    recentActivity: {
+      title: string;
+      time: string;
+      type: "transaction" | "rental";
+    }[];
+    pendingRequests: {
+      id: string;
+      productName: string;
+      type: "incoming" | "outgoing";
+      time: string;
+      requesterName?: string;
+      status?: string;
+    }[];
+  };
+}
