@@ -490,32 +490,17 @@ export const adminUpdatePurchasePayment = (
   });
 
 // ─── User Dashboard ────────────────────────────────────────────────────────────
-// Matches: GET /overview, GET /credits/credit-history (verifyToken protected)
+// ─── User Dashboard ────────────────────────────────────────────────────────────
+// Matches backend: router.get('/overview', verifyToken, getUserOverview)
+//                  router.get('/credits/credit-history', verifyToken, getUserCreditHistory)
+// 🔁 If your app.js mounts userDashboard.routes.js under a different prefix
+// (e.g. just "/api/v1" with no extra "/dashboard"), update the two paths below.
 
 export interface UserOverviewResponse {
   success: boolean;
   message: string;
   data: {
-    user: {
-      id: string;
-      name: string;
-      email: string;
-      roll: string;
-      phoneNumber: string | null;
-      selfie: string | null;
-      idCardFront: string | null;
-      idCardBack: string | null;
-      role: string;
-      emailVerified: boolean;
-      isVerified: "UNVERIFIED" | "PENDING" | "VERIFIED";
-      brittooVerified: boolean;
-      securityScore: string;
-      isSuspended: boolean;
-      suspensionCount: number;
-      createdAt: string;
-      updatedAt: string;
-      isValidRuetMail: boolean;
-    };
+    user: User;
     wallet: {
       availableBalance: number;
       lockedBalance: number;
@@ -541,3 +526,93 @@ export interface UserOverviewResponse {
     }[];
   };
 }
+
+export const getUserOverview = () =>
+  api.get<UserOverviewResponse>("/api/v1/dashboard/overview");
+
+export interface UserCreditHistoryDashResponse {
+  success: boolean;
+  data: {
+    bccWallet: { availableBalance: number; lockedBalance: number } | null;
+    redCacheCredits: {
+      id: string;
+      amount: number;
+      inUse: number;
+      isFrozen: boolean;
+      createdAt: string;
+      sourceProduct: {
+        id: string;
+        name: string;
+        productSL: string;
+        optimizedImages: string[];
+        pricePerDay: number;
+      };
+    }[];
+    bccTransactions: {
+      id: string;
+      amount: number;
+      rentalRequestId: string | null;
+      paymentGateway: string | null;
+      transactionId: string | null;
+      transactionType: string;
+      status: "PENDING" | "ACCEPTED" | "REJECTED";
+      rejectReason: string | null;
+      createdAt: string;
+      updatedAt: string;
+    }[];
+    rentalHistory: {
+      id: string;
+      status: string;
+      usedBccAmount: number | null;
+      product: {
+        id: string;
+        name: string;
+        pricePerDay: number;
+        productSL: string;
+        optimizedImages: string[];
+      };
+      rccUsageDetails: {
+        usedAmount: number;
+        redCacheCredit: {
+          sourceProduct: {
+            id: string;
+            name: string;
+            productSL: string;
+            pricePerDay: number;
+          };
+        };
+      }[];
+    }[];
+    summary: {
+      bcc: {
+        lockedBalance: number;
+        availableBalance: number;
+        totalPurchased: number;
+        totalSpent: number;
+        pendingBccRequests: any[];
+        totalPendingBcc: number;
+      };
+      rcc: {
+        totalAmount: number;
+        totalInUse: number;
+        availableAmount: number;
+        totalCredits: number;
+        usageByProduct: Record<
+          string,
+          { productName: string; totalUsed: number; usageCount: number }
+        >;
+      };
+      rentals: {
+        totalRentals: number;
+        completedRentals: number;
+        totalValue: number;
+        averageRentalValue: number;
+      };
+    };
+  };
+}
+
+export const getUserCreditHistoryDash = () =>
+  api.get<UserCreditHistoryDashResponse>(
+    "/api/v1/dashboard/credits/credit-history",
+  );

@@ -1,6 +1,6 @@
-import "../global.css";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import "../global.css";
 
 export default function RootLayout() {
   return (
@@ -22,6 +22,8 @@ export default function RootLayout() {
         <Stack.Screen name="(auth)/reset-password" />
         <Stack.Screen name="(auth)/verify-identity" />
         <Stack.Screen name="dashboard" />
+        <Stack.Screen name="wallet" />
+
         {/* Product screens */}
         <Stack.Screen name="(products)/index" />
         <Stack.Screen name="(products)/[id]" />
