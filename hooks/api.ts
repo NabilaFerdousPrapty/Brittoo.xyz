@@ -1,4 +1,5 @@
 // hooks/api.ts
+
 import axios from "axios";
 import Constants from "expo-constants";
 import * as SecureStore from "expo-secure-store";
@@ -6,36 +7,62 @@ import { Platform } from "react-native";
 import { STORAGE_KEYS } from "../constants";
 
 // -----------------------------------------------------------------------------
-// Get the correct backend URL based on environment
+// Backend URL Configuration
 // -----------------------------------------------------------------------------
+
 const MY_COMPUTER_IP = "192.168.31.223";
 
 const getBackendUrl = (): string => {
-  // Web: localhost works
-  if (Platform.OS === "web") return "http://localhost:5000";
-
-  // For physical devices (iOS/Android) running Expo Go
-  if (Platform.OS === "android" || Platform.OS === "ios") {
-    // Try to get IP from Expo debugger host
-    const debuggerHost =
-      Constants.manifest?.debuggerHost || Constants.expoConfig?.hostUri;
-    if (debuggerHost) {
-      const ip = debuggerHost.split(":")[0];
-      return `http://${ip}:5000`;
-    }
-    // Fallback to your hardcoded IP (most reliable)
-    return `http://${MY_COMPUTER_IP}:5000`;
+  // Web browser
+  if (Platform.OS === "web") {
+    return "http://localhost:5000";
   }
 
-  // Simulator fallback
-  return "http://localhost:5000";
+  // Android Studio Emulator
+  if (Platform.OS === "android") {
+    const hostUri = Constants.expoConfig?.hostUri;
+
+    // If running through Expo Go on a physical Android device
+    if (hostUri) {
+      const ip = hostUri.split(":")[0];
+      return `http://${ip}:5000`;
+    }
+
+    // Android Emulator
+    return "http://10.0.2.2:5000";
+  }
+
+  // iOS
+  if (Platform.OS === "ios") {
+    const hostUri = Constants.expoConfig?.hostUri;
+
+    // Physical iPhone
+    if (hostUri) {
+      const ip = hostUri.split(":")[0];
+      return `http://${ip}:5000`;
+    }
+
+    // iOS Simulator
+    return "http://localhost:5000";
+  }
+
+  // Fallback
+  return `http://${MY_COMPUTER_IP}:5000`;
 };
 
-export const BACKEND_URL = "http://192.168.31.223:5000";
+export const BACKEND_URL = getBackendUrl();
+
+console.log("BACKEND_URL:", BACKEND_URL);
+
+// -----------------------------------------------------------------------------
+// Axios Instance
+// -----------------------------------------------------------------------------
 
 const api = axios.create({
   baseURL: BACKEND_URL,
-  headers: { "Content-Type": "application/json" },
+  headers: {
+    "Content-Type": "application/json",
+  },
   timeout: 15000,
 });
 
