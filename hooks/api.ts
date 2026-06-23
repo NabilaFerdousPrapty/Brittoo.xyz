@@ -111,9 +111,7 @@ export const resetPassword = (token: string, newPassword: string) => {
   return api.post("/api/v1/auth/reset-password", { token, newPassword });
 };
 
-export const getCurrentUser = () => {
-  return api.get("/api/v1/auth/me");
-};
+export const getCurrentUser = () => api.get("/api/v1/auth/get-current-user");
 
 // -----------------------------------------------------------------------------
 // 4. Verification endpoints (document uploads)

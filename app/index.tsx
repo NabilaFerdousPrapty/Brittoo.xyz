@@ -41,7 +41,6 @@ export default function HomeScreen() {
                 resizeMode="contain"
               />
             </View>
-            {/* Removed "Brittoo" text as requested */}
           </View>
           {/* <View className="flex-row gap-5">
             <TouchableOpacity

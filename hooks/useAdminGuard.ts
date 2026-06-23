@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
 import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
+import { useEffect, useState } from "react";
 import { STORAGE_KEYS } from "../constants";
 
 /**
@@ -14,7 +14,7 @@ export const useAdminGuard = () => {
     (async () => {
       const userStr = await SecureStore.getItemAsync(STORAGE_KEYS.USER);
       if (!userStr) {
-        router.replace("/api/v1/(auth)/login");
+        router.replace("/(auth)/login");
         return;
       }
       const user = JSON.parse(userStr);

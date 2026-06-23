@@ -1,14 +1,19 @@
+import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
+import * as SecureStore from "expo-secure-store";
 import React, { useEffect, useState } from "react";
 import {
-  View, Text, ScrollView, TouchableOpacity,
-  RefreshControl, ActivityIndicator,
+  ActivityIndicator,
+  RefreshControl,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { router } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { STORAGE_KEYS } from "../../constants";
 import { adminGetAnalytics } from "../../hooks/api";
 import { useAdminGuard } from "../../hooks/useAdminGuard";
-import * as SecureStore from "expo-secure-store";
-import { STORAGE_KEYS } from "../../constants";
+import { useAuth } from "../../hooks/useAuth";
 
 type IconName = React.ComponentProps<typeof Ionicons>["name"];
 
@@ -27,15 +32,29 @@ function StatCard({ label, value, icon, color, bg, onPress }: StatCardProps) {
       onPress={onPress}
       activeOpacity={onPress ? 0.8 : 1}
       className="flex-1 bg-white border border-gray-100 rounded-2xl p-4"
-      style={{ elevation: 1, shadowColor: "#000", shadowOpacity: 0.03, shadowRadius: 4, shadowOffset: { width: 0, height: 1 } }}
+      style={{
+        elevation: 1,
+        shadowColor: "#000",
+        shadowOpacity: 0.03,
+        shadowRadius: 4,
+        shadowOffset: { width: 0, height: 1 },
+      }}
     >
-      <View className={`w-9 h-9 rounded-xl items-center justify-center mb-3`} style={{ backgroundColor: bg }}>
+      <View
+        className={`w-9 h-9 rounded-xl items-center justify-center mb-3`}
+        style={{ backgroundColor: bg }}
+      >
         <Ionicons name={icon} size={18} color={color} />
       </View>
       <Text className="text-gray-900 text-xl font-bold">{value}</Text>
       <Text className="text-gray-400 text-xs mt-0.5">{label}</Text>
       {onPress && (
-        <Ionicons name="chevron-forward" size={12} color="#d1d5db" style={{ position: "absolute", top: 16, right: 16 }} />
+        <Ionicons
+          name="chevron-forward"
+          size={12}
+          color="#d1d5db"
+          style={{ position: "absolute", top: 16, right: 16 }}
+        />
       )}
     </TouchableOpacity>
   );
@@ -49,13 +68,27 @@ interface NavItemProps {
   onPress: () => void;
 }
 
-function NavItem({ label, desc, icon, badge, onPress }: NavItemProps) {
+// ✅ NavItem as separate component - pass user as prop
+function NavItem({
+  label,
+  desc,
+  icon,
+  badge,
+  onPress,
+  user,
+}: NavItemProps & { user?: any }) {
   return (
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.85}
       className="flex-row items-center gap-4 bg-white border border-gray-100 rounded-2xl px-4 py-3.5 mb-2.5"
-      style={{ elevation: 1, shadowColor: "#000", shadowOpacity: 0.02, shadowRadius: 3, shadowOffset: { width: 0, height: 1 } }}
+      style={{
+        elevation: 1,
+        shadowColor: "#000",
+        shadowOpacity: 0.02,
+        shadowRadius: 3,
+        shadowOffset: { width: 0, height: 1 },
+      }}
     >
       <View className="w-10 h-10 bg-gray-50 rounded-xl items-center justify-center">
         <Ionicons name={icon} size={20} color="#374151" />
@@ -78,8 +111,9 @@ function NavItem({ label, desc, icon, badge, onPress }: NavItemProps) {
 
 export default function AdminDashboardScreen() {
   const { ready } = useAdminGuard();
+  const { user, loading: authLoading } = useAuth(); // ✅ Hook called inside component
   const [analytics, setAnalytics] = useState<any>(null);
-  const [loading, setLoading]     = useState(true);
+  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [adminName, setAdminName] = useState("");
 
@@ -124,7 +158,10 @@ export default function AdminDashboardScreen() {
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-            onRefresh={() => { setRefreshing(true); loadData(); }}
+            onRefresh={() => {
+              setRefreshing(true);
+              loadData();
+            }}
             tintColor="#111827"
           />
         }
@@ -134,29 +171,63 @@ export default function AdminDashboardScreen() {
           <View className="flex-row items-center justify-between">
             <View>
               <Text className="text-gray-400 text-xs">Admin Panel</Text>
-              <Text className="text-gray-900 text-xl font-semibold">Hey, {adminName} 👋</Text>
+              <Text className="text-gray-900 text-xl font-semibold">
+                Hey, {adminName} 👋
+              </Text>
             </View>
             <TouchableOpacity
               onPress={handleLogout}
               className="flex-row items-center gap-1.5 bg-gray-100 rounded-xl px-3 py-2"
             >
               <Ionicons name="log-out-outline" size={14} color="#6b7280" />
-              <Text className="text-gray-500 text-xs font-medium">Sign out</Text>
+              <Text className="text-gray-500 text-xs font-medium">
+                Sign out
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
 
         <View className="px-5 pt-5">
+          {/* Admin Banner - only visible to admins */}
+          {user?.role === "ADMIN" && (
+            <TouchableOpacity
+              className="mb-5 bg-gray-900 rounded-2xl p-4 flex-row items-center justify-between"
+              onPress={() => router.push("/(admin)")}
+            >
+              <View className="flex-row items-center gap-3">
+                <View className="bg-emerald-500 p-2 rounded-full">
+                  <Ionicons
+                    name="shield-checkmark-outline"
+                    size={18}
+                    color="white"
+                  />
+                </View>
+                <View>
+                  <Text className="text-white font-bold text-sm">
+                    Admin Panel
+                  </Text>
+                  <Text className="text-gray-400 text-xs mt-0.5">
+                    Manage users & platform
+                  </Text>
+                </View>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="#10b981" />
+            </TouchableOpacity>
+          )}
 
           {/* Analytics grid */}
           {loading ? (
             <View className="items-center py-8">
               <ActivityIndicator size="small" color="#111827" />
-              <Text className="text-gray-400 text-xs mt-2">Loading analytics...</Text>
+              <Text className="text-gray-400 text-xs mt-2">
+                Loading analytics...
+              </Text>
             </View>
           ) : (
             <>
-              <Text className="text-gray-400 text-xs uppercase tracking-wider font-medium mb-3">Platform Overview</Text>
+              <Text className="text-gray-400 text-xs uppercase tracking-wider font-medium mb-3">
+                Platform Overview
+              </Text>
               <View className="flex-row gap-3 mb-3">
                 <StatCard
                   label="Total Users"
@@ -213,7 +284,9 @@ export default function AdminDashboardScreen() {
           )}
 
           {/* Navigation */}
-          <Text className="text-gray-400 text-xs uppercase tracking-wider font-medium mb-3">Manage</Text>
+          <Text className="text-gray-400 text-xs uppercase tracking-wider font-medium mb-3">
+            Manage
+          </Text>
 
           <NavItem
             label="Users"
