@@ -1,4 +1,6 @@
 // app/(app)/index.tsx
+
+import HowItWorks from "@/components/cards/HowItWorks";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
@@ -100,6 +102,9 @@ export default function HomeScreen() {
               Learn more →
             </Text>
           </TouchableOpacity>
+        </View>
+        <View>
+          <HowItWorks />
         </View>
       </ScrollView>
     </SafeAreaView>
