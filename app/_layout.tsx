@@ -14,12 +14,14 @@ export default function RootLayout() {
         }}
       >
         <Stack.Screen name="index" />
+        {/* Admin screens */}
+        <Stack.Screen name="(admin)" />
 
-        <Stack.Screen name="(auth)/register" />
+        <Stack.Screen name="(auth)/signup" />
         <Stack.Screen name="(auth)/login" />
         <Stack.Screen name="(auth)/verify-otp" />
         <Stack.Screen name="(auth)/forgot-password" />
-        <Stack.Screen name="(auth)/reset-password" />
+
         <Stack.Screen name="(auth)/verify-identity" />
         <Stack.Screen name="dashboard" />
         <Stack.Screen name="wallet" />

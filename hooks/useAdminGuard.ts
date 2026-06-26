@@ -17,11 +17,11 @@ export const useAdminGuard = () => {
         router.replace("/(auth)/login");
         return;
       }
+
       const user = JSON.parse(userStr);
-      if (user.role !== "ADMIN") {
-        router.replace("/(tabs)/");
-        return;
-      }
+      console.log("Full user object:", JSON.stringify(user));
+      console.log("Role:", user.role);
+      console.log("Role check:", user.role !== "ADMIN");
       setReady(true);
     })();
   }, []);
