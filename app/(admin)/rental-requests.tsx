@@ -11,7 +11,6 @@ import {
   adminUpdateRentalStatus,
   adminRejectRental,
 } from "../../hooks/api";
-import { useAdminGuard } from "../../hooks/useAdminGuard";
 import { Button } from "../../components/button";
 import { Input } from "../../components/input";
 
@@ -63,7 +62,6 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 export default function AdminRentalRequestsScreen() {
-  const { ready } = useAdminGuard();
   const [requests, setRequests]     = useState<any[]>([]);
   const [loading, setLoading]       = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -99,10 +97,13 @@ export default function AdminRentalRequestsScreen() {
   }, [search, statusFilter, page]);
 
   useEffect(() => {
-    if (!ready) return;
     if (debounce.current) clearTimeout(debounce.current);
     debounce.current = setTimeout(() => fetchRequests(true), 350);
-  }, [search, statusFilter, ready]);
+
+    return () => {
+      if (debounce.current) clearTimeout(debounce.current);
+    };
+  }, [search, statusFilter]);
 
   const openDetail = (item: any) => {
     setSelected(item);
@@ -139,8 +140,6 @@ export default function AdminRentalRequestsScreen() {
       Alert.alert("Error", e?.response?.data?.message || "Reject failed");
     } finally { setActing(false); }
   };
-
-  if (!ready) return null;
 
   return (
     <View className="flex-1 bg-white">

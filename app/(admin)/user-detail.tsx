@@ -8,7 +8,6 @@ import { Ionicons } from "@expo/vector-icons";
 import {
   adminGetUserDetails, adminVerifyUser, adminSuspendUser,
 } from "../../hooks/api";
-import { useAdminGuard } from "../../hooks/useAdminGuard";
 import { Button } from "../../components/button";
 import { API_BASE_URL } from "../../constants";
 
@@ -63,14 +62,13 @@ function StatCard({ label, value, icon, color }: { label: string; value: string 
 }
 
 export default function AdminUserDetailScreen() {
-  const { ready } = useAdminGuard();
   const { userId } = useLocalSearchParams<{ userId: string }>();
   const [data, setData]         = useState<any>(null);
   const [loading, setLoading]   = useState(true);
   const [activeTab, setActiveTab] = useState<TabId>("overview");
   const [acting, setActing]     = useState(false);
 
-  useEffect(() => { if (ready && userId) load(); }, [ready, userId]);
+  useEffect(() => { if (userId) load(); }, [userId]);
 
   const load = async () => {
     setLoading(true);
@@ -105,7 +103,7 @@ export default function AdminUserDetailScreen() {
     ]);
   };
 
-  if (!ready || loading) {
+  if (loading) {
     return (
       <View className="flex-1 bg-white items-center justify-center">
         <ActivityIndicator size="large" color="#111827" />

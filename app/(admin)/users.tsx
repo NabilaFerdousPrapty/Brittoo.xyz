@@ -6,7 +6,6 @@ import {
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { adminGetUsers } from "../../hooks/api";
-import { useAdminGuard } from "../../hooks/useAdminGuard";
 
 const STATUS_FILTERS = ["ALL","VERIFIED","PENDING","UNVERIFIED","SUSPENDED"] as const;
 type Status = typeof STATUS_FILTERS[number];
@@ -25,7 +24,6 @@ const SCORE_COLORS: Record<string, string> = {
 };
 
 export default function AdminUsersScreen() {
-  const { ready } = useAdminGuard();
   const [users, setUsers]           = useState<any[]>([]);
   const [summary, setSummary]       = useState<any>(null);
   const [loading, setLoading]       = useState(true);
@@ -51,12 +49,13 @@ export default function AdminUsersScreen() {
   }, [search, status, page]);
 
   useEffect(() => {
-    if (!ready) return;
     if (debounce.current) clearTimeout(debounce.current);
     debounce.current = setTimeout(() => fetchUsers(true), 350);
-  }, [search, status, ready]);
 
-  if (!ready) return null;
+    return () => {
+      if (debounce.current) clearTimeout(debounce.current);
+    };
+  }, [search, status]);
 
   const StatusPill = ({ s }: { s: Status }) => {
     const active = s === status;

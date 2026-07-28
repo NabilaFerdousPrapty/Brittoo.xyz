@@ -12,8 +12,6 @@ import {
 } from "react-native";
 import { STORAGE_KEYS } from "../../constants";
 import { adminGetAnalytics } from "../../hooks/api";
-import { useAdminGuard } from "../../hooks/useAdminGuard";
-import { useAuth } from "../../hooks/useAuth";
 
 type IconName = React.ComponentProps<typeof Ionicons>["name"];
 
@@ -110,19 +108,15 @@ function NavItem({
 }
 
 export default function AdminDashboardScreen() {
-  const { ready } = useAdminGuard();
-  const { user, loading: authLoading } = useAuth(); // ✅ Hook called inside component
   const [analytics, setAnalytics] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [adminName, setAdminName] = useState("");
 
   useEffect(() => {
-    if (ready) {
-      loadData();
-      loadAdmin();
-    }
-  }, [ready]);
+    loadData();
+    loadAdmin();
+  }, []);
 
   const loadAdmin = async () => {
     const s = await SecureStore.getItemAsync(STORAGE_KEYS.USER);
@@ -146,8 +140,6 @@ export default function AdminDashboardScreen() {
     await SecureStore.deleteItemAsync(STORAGE_KEYS.USER);
     router.replace("/(auth)/login");
   };
-
-  if (!ready) return null;
 
   const a = analytics ?? {};
 
@@ -188,33 +180,6 @@ export default function AdminDashboardScreen() {
         </View>
 
         <View className="px-5 pt-5">
-          {/* Admin Banner - only visible to admins */}
-          {user?.role === "ADMIN" && (
-            <TouchableOpacity
-              className="mb-5 bg-gray-900 rounded-2xl p-4 flex-row items-center justify-between"
-              onPress={() => router.push("/(admin)")}
-            >
-              <View className="flex-row items-center gap-3">
-                <View className="bg-emerald-500 p-2 rounded-full">
-                  <Ionicons
-                    name="shield-checkmark-outline"
-                    size={18}
-                    color="white"
-                  />
-                </View>
-                <View>
-                  <Text className="text-white font-bold text-sm">
-                    Admin Panel
-                  </Text>
-                  <Text className="text-gray-400 text-xs mt-0.5">
-                    Manage users & platform
-                  </Text>
-                </View>
-              </View>
-              <Ionicons name="chevron-forward" size={16} color="#10b981" />
-            </TouchableOpacity>
-          )}
-
           {/* Analytics grid */}
           {loading ? (
             <View className="items-center py-8">

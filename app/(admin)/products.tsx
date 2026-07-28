@@ -7,7 +7,6 @@ import {
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { getProducts, adminHoldProduct, adminUpdateProduct } from "../../hooks/api";
-import { useAdminGuard } from "../../hooks/useAdminGuard";
 import { Button } from "../../components/button";
 import { Input } from "../../components/input";
 import { API_BASE_URL } from "../../constants";
@@ -19,7 +18,6 @@ const CONDITION_COLORS: Record<string, string> = {
 };
 
 export default function AdminProductsScreen() {
-  const { ready } = useAdminGuard();
   const [products, setProducts]     = useState<any[]>([]);
   const [loading, setLoading]       = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -56,10 +54,13 @@ export default function AdminProductsScreen() {
   }, [search, productType, page]);
 
   useEffect(() => {
-    if (!ready) return;
     if (debounce.current) clearTimeout(debounce.current);
     debounce.current = setTimeout(() => fetchProducts(true), 350);
-  }, [search, productType, ready]);
+
+    return () => {
+      if (debounce.current) clearTimeout(debounce.current);
+    };
+  }, [search, productType]);
 
   const openEdit = (p: any) => {
     setSelected(p);
@@ -112,8 +113,6 @@ export default function AdminProductsScreen() {
   };
 
   const TYPES = ["", "GADGET","ELECTRONICS","VEHICLE","FURNITURE","CLOTHING","BOOK","ACADEMIC_BOOK","STATIONARY","MUSICAL_INSTRUMENT","APARTMENTS","OTHERS"];
-
-  if (!ready) return null;
 
   return (
     <View className="flex-1 bg-white">

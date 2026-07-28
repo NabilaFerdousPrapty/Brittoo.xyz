@@ -6,7 +6,6 @@ import {
 import { router, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { adminGetUserCreditHistory } from "../../hooks/api";
-import { useAdminGuard } from "../../hooks/useAdminGuard";
 
 const TX_TYPE_COLORS: Record<string, { bg: string; text: string }> = {
   PURCHASE_BCC:    { bg: "bg-green-100",  text: "text-green-700"  },
@@ -30,7 +29,6 @@ function SummaryCard({ label, value, sub, color }: { label: string; value: strin
 }
 
 export default function AdminUserCreditsScreen() {
-  const { ready } = useAdminGuard();
   const { userId } = useLocalSearchParams<{ userId: string }>();
   const [data, setData]         = useState<any>(null);
   const [loading, setLoading]   = useState(true);
@@ -45,9 +43,9 @@ export default function AdminUserCreditsScreen() {
     finally { setLoading(false); setRefreshing(false); }
   };
 
-  useEffect(() => { if (ready && userId) load(); }, [ready, userId]);
+  useEffect(() => { if (userId) load(); }, [userId]);
 
-  if (!ready || loading) {
+  if (loading) {
     return <View className="flex-1 bg-white items-center justify-center"><ActivityIndicator size="large" color="#111827" /></View>;
   }
 

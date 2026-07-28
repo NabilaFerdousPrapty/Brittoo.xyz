@@ -11,7 +11,6 @@ import {
   adminUpdatePurchaseStatus,
   adminUpdatePurchasePayment,
 } from "../../hooks/api";
-import { useAdminGuard } from "../../hooks/useAdminGuard";
 import { Button } from "../../components/button";
 
 const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
@@ -37,7 +36,6 @@ function Badge({ status, colorMap }: { status: string; colorMap: Record<string, 
 }
 
 export default function AdminPurchaseRequestsScreen() {
-  const { ready } = useAdminGuard();
   const [requests, setRequests]     = useState<any[]>([]);
   const [loading, setLoading]       = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -54,7 +52,7 @@ export default function AdminPurchaseRequestsScreen() {
     finally { setLoading(false); setRefreshing(false); }
   };
 
-  useEffect(() => { if (ready) load(); }, [ready]);
+  useEffect(() => { load(); }, []);
 
   const handleStatus = async (status: string) => {
     setActing(true);
@@ -79,8 +77,6 @@ export default function AdminPurchaseRequestsScreen() {
       Alert.alert("Error", e?.response?.data?.message || "Failed");
     } finally { setActing(false); }
   };
-
-  if (!ready) return null;
 
   return (
     <View className="flex-1 bg-white">

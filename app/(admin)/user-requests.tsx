@@ -6,7 +6,6 @@ import {
 import { router, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { adminGetUserPlacedRequests, adminGetUserReceivedRequests } from "../../hooks/api";
-import { useAdminGuard } from "../../hooks/useAdminGuard";
 
 const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
   PENDING:                       { bg: "bg-gray-100",   text: "text-gray-600"  },
@@ -31,7 +30,6 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 export default function AdminUserRequestsScreen() {
-  const { ready } = useAdminGuard();
   const { userId, type } = useLocalSearchParams<{ userId: string; type: "placed" | "received" }>();
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading]   = useState(true);
@@ -47,9 +45,7 @@ export default function AdminUserRequestsScreen() {
     finally { setLoading(false); setRefreshing(false); }
   };
 
-  useEffect(() => { if (ready && userId) load(); }, [ready, userId, type]);
-
-  if (!ready) return null;
+  useEffect(() => { if (userId) load(); }, [userId, type]);
 
   const isReceived = type === "received";
 
