@@ -17,14 +17,7 @@ const getBaseUrl = (): string => {
   const physicalDeviceIp = "192.168.1.100"; // ← CHANGE THIS TO YOUR PC's IP
 
   if (Platform.OS === "android") {
-    // Check if we're on a real device (not an emulator)
-    // A simple heuristic: emulator usually has "10.0.2.2", real device doesn't.
-    // You can also use a build-time env variable: process.env.EXPO_PUBLIC_API_URL
-    // For now, we ask the developer to manually set the IP for physical devices.
-    // To auto-detect, you would need to know the device's gateway – beyond scope.
-    // So we default to emulator-friendly 10.0.2.2.
-    // If you're testing on a real device, uncomment the next line and set the IP.
-    // return `http://${physicalDeviceIp}:5000`;
+
     return "http://10.0.2.2:5000";
   }
   // iOS simulator, web, or any other platform
