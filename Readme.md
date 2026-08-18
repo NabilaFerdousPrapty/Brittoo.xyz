@@ -149,9 +149,7 @@ User profile and account management.
 - My Listings: Manage listed items
 - My Bookings: View rental history
 - Favorites: Saved items
-- Reviews: Given and received reviews
-- Settings: Account preferences
-- Support: Help center & contact
+
 ```
 
 ## 📱 Tab Navigation Layout (`_layout.tsx`)
