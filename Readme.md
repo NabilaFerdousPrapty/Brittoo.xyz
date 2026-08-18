@@ -103,7 +103,7 @@ Discover and search for items to rent.
 List new items for rent.
 
 ```
-[Placeholder for Add Item Tab Screenshot]
+
 ```
 
 **Features:**
