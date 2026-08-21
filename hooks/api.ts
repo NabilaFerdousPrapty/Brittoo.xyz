@@ -479,29 +479,32 @@ export interface GetRentalRequestsParams {
 }
 
 export const adminGetRentalRequests = (params: GetRentalRequestsParams = {}) =>
-  api.get("/api/v1/rental-requests/all", { params });
+  api.get("/api/v1/admin/rental-requests", { params });
 
 export const adminUpdateRentalStatus = (requestId: string, status: string) =>
-  api.put(`/api/v1/rental-requests/${requestId}/status`, { status });
-
+  api.put(
+    `/api/v1/admin/rental-requests/${requestId}/update-status`,
+    { status }
+  );
 export const adminRejectRental = (
   requestId: string,
-  brittooRejectReason: string,
+  brittooRejectReason: string
 ) =>
-  api.put(`/api/v1/rental-requests/${requestId}/reject`, {
+  api.put(`/api/v1/admin/rental-requests/${requestId}/reject`, {
     brittooRejectReason,
   });
 
 // ─── Admin — Dashboard Analytics ──────────────────────────────────────────────
 
-export const adminGetAnalytics = () => api.get("/admin/analytics");
+export const adminGetAnalytics = () =>
+  api.get("/api/v1/admin-dash/analytics");
 
 export const adminHoldProduct = (productId: string) =>
   api.put(`/api/v1/admin/hold/${productId}`, {});
 
 // ─── Admin — Purchase Requests ────────────────────────────────────────────────
 
-export const adminGetPurchaseRequests = () => api.get("/purchase-requests/all");
+export const adminGetPurchaseRequests = () => api.get("/api/v1/purchase-requests/all");
 
 export const adminUpdatePurchaseStatus = (requestId: string, status: string) =>
   api.put(`/api/v1/purchase-requests/${requestId}/status`, { status });
@@ -514,12 +517,6 @@ export const adminUpdatePurchasePayment = (
     paymentStatus,
   });
 
-// ─── User Dashboard ────────────────────────────────────────────────────────────
-// ─── User Dashboard ────────────────────────────────────────────────────────────
-// Matches backend: router.get('/overview', verifyToken, getUserOverview)
-//                  router.get('/credits/credit-history', verifyToken, getUserCreditHistory)
-// 🔁 If your app.js mounts userDashboard.routes.js under a different prefix
-// (e.g. just "/api/v1" with no extra "/dashboard"), update the two paths below.
 
 export interface UserOverviewResponse {
   success: boolean;

@@ -231,7 +231,7 @@ export default function DashboardScreen() {
                 </View>
               </View>
               <TouchableOpacity
-                onPress={() => router.push("/(admin)/index")}
+                onPress={() => router.push("/(admin)")}
                 className="bg-emerald-600 px-3 py-1.5 rounded-lg"
               >
                 <Text className="text-white text-xs font-medium">
@@ -245,7 +245,7 @@ export default function DashboardScreen() {
                 icon="people-outline"
                 label="Users"
                 desc="Manage users"
-                onPress={() => router.push("/(admin)/user-details")}
+                onPress={() => router.push("/(admin)/users")}
               />
               <AdminQuickAction
                 icon="cube-outline"
