@@ -310,9 +310,6 @@ export default function AdminDashboardScreen() {
     0
   );
 
-  // --------------------------------------------------
-  // UI
-  // --------------------------------------------------
 
   return (
     <View className="flex-1 bg-gray-50">
