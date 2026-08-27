@@ -638,3 +638,6 @@ export const getUserCreditHistoryDash = () =>
   api.get<UserCreditHistoryDashResponse>(
     "/api/v1/dashboard/credits/credit-history",
   );
+
+
+// get and post rental request
