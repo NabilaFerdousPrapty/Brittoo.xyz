@@ -641,3 +641,236 @@ export const getUserCreditHistoryDash = () =>
 
 
 // get and post rental request
+
+// ─── Rental Requests — User ─────────────────────────────────────────────────
+
+// Create a rental request
+// POST /api/v1/rental-requests/create-request
+export const createRentalRequest = (data: any) =>
+  api.post("/api/v1/rental-requests/create-request", data);
+
+
+// Get rental requests placed by the logged-in user
+// GET /api/v1/rental-requests/placed-requests
+export const getUserPlacedRentalRequests = () =>
+  api.get("/api/v1/rental-requests/placed-requests");
+
+
+// Get rental requests received by the logged-in user (product owner)
+// GET /api/v1/rental-requests/owner-requests
+export const getOwnerRentalRequests = () =>
+  api.get("/api/v1/rental-requests/owner-requests");
+
+
+// Accept a rental request
+// PUT /api/v1/rental-requests/accept/:requestId
+export const acceptRentalRequest = (requestId: string) =>
+  api.put(`/api/v1/rental-requests/accept/${requestId}`);
+
+
+// Cancel a rental request
+// PUT /api/v1/rental-requests/cancel/:requestId
+export const cancelRentalRequest = (requestId: string) =>
+  api.put(`/api/v1/rental-requests/cancel/${requestId}`);
+
+
+// Reject a rental request
+// PUT /api/v1/rental-requests/reject/:requestId
+export const rejectRentalRequest = (requestId: string) =>
+  api.put(`/api/v1/rental-requests/reject/${requestId}`);
+
+
+// ============================================================
+// PURCHASE REQUEST APIs
+// ============================================================
+
+export type PurchaseCollectionMethod =
+  | "HOME"
+  | "BRITTOO_TERMINAL";
+
+export interface PlacePurchaseRequestPayload {
+  productId: string;
+  dealPrice: number | string;
+  buyerCollectionMethod: PurchaseCollectionMethod;
+  buyerPhoneNumber: string;
+  buyerDeliveryAddress?: string | null;
+  buyerPickupTerminal?: string | null;
+}
+
+export interface AcceptPurchaseRequestPayload {
+  sellerDeliveryMethod: PurchaseCollectionMethod;
+  sellerPhoneNumber: string;
+  sellerDeliveryAddress?: string | null;
+  sellerDeliveryTerminal?: string | null;
+}
+
+export interface PurchaseRequest {
+  id: string;
+
+  productId: string;
+  buyerId: string;
+  sellerId: string;
+
+  askingPrice: number;
+  dealPrice: number;
+  platformCharge: number;
+  totalPrice: number;
+
+  status: string;
+  paymentStatus?: string;
+
+  buyerCollectionMethod: PurchaseCollectionMethod;
+  buyerPhoneNumber: string;
+  buyerDeliveryAddress?: string | null;
+  buyerPickupTerminal?: string | null;
+
+  sellerPhoneNumber?: string | null;
+  sellerDeliveryMethod?: PurchaseCollectionMethod | null;
+  sellerDeliveryAddress?: string | null;
+  sellerDeliveryTerminal?: string | null;
+
+  sellerRejectReason?: string | null;
+  buyerCancelReason?: string | null;
+  brittooRejectReason?: string | null;
+
+  createdAt: string;
+  updatedAt: string;
+
+  product?: Product;
+  buyer?: any;
+  seller?: any;
+}
+
+export interface PurchaseRequestListResponse {
+  success: boolean;
+  data: PurchaseRequest[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
+
+/**
+ * Buyer:
+ * Place a purchase request
+ *
+ * POST /api/v1/purchase-requests/place
+ */
+export const placePurchaseRequest = (
+  data: PlacePurchaseRequestPayload
+) => {
+  return api.post<{
+    success: boolean;
+    message: string;
+    data: PurchaseRequest;
+  }>("/api/v1/purchase-requests/place", data);
+};
+
+
+/**
+ * Buyer:
+ * Cancel a purchase request
+ *
+ * PUT /api/v1/purchase-requests/:requestId/cancel
+ */
+export const cancelPurchaseRequest = (
+  requestId: string,
+  buyerCancelReason: string
+) => {
+  return api.put<{
+    success: boolean;
+    message: string;
+    data: PurchaseRequest;
+  }>(
+    `/api/v1/purchase-requests/${requestId}/cancel`,
+    {
+      buyerCancelReason,
+    }
+  );
+};
+
+
+/**
+ * Buyer:
+ * Get purchase requests placed by current user
+ *
+ * GET /api/v1/purchase-requests/placed
+ */
+export const getPlacedPurchaseRequests = (params?: {
+  status?: string;
+  page?: number;
+  limit?: number;
+}) => {
+  return api.get<PurchaseRequestListResponse>(
+    "/api/v1/purchase-requests/placed",
+    {
+      params,
+    }
+  );
+};
+
+
+/**
+ * Seller:
+ * Accept a purchase request
+ *
+ * PUT /api/v1/purchase-requests/:requestId/accept
+ */
+export const acceptPurchaseRequest = (
+  requestId: string,
+  data: AcceptPurchaseRequestPayload
+) => {
+  return api.put<{
+    success: boolean;
+    message: string;
+    data: PurchaseRequest;
+  }>(
+    `/api/v1/purchase-requests/${requestId}/accept`,
+    data
+  );
+};
+
+
+/**
+ * Seller:
+ * Reject a purchase request
+ *
+ * PUT /api/v1/purchase-requests/:requestId/reject
+ */
+export const rejectPurchaseRequest = (
+  requestId: string,
+  sellerRejectReason: string
+) => {
+  return api.put<{
+    success: boolean;
+    message: string;
+    data: PurchaseRequest;
+  }>(
+    `/api/v1/purchase-requests/${requestId}/reject`,
+    {
+      sellerRejectReason,
+    }
+  );
+};
+
+
+/**
+ * Seller:
+ * Get purchase requests received for own products
+ *
+ * GET /api/v1/purchase-requests/received
+ */
+export const getReceivedPurchaseRequests = (params?: {
+  status?: string;
+  page?: number;
+  limit?: number;
+}) => {
+  return api.get<PurchaseRequestListResponse>(
+    "/api/v1/purchase-requests/received",
+    {
+      params,
+    }
+  );
+};
