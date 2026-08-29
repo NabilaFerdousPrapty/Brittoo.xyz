@@ -438,18 +438,26 @@ export default function ProductDetailScreen() {
           {/* Non-owner CTA */}
           {!isOwner && (
             <View className="gap-3">
-              <Button
-                label="Request to Rent"
-                onPress={() =>
-                  Alert.alert("Coming soon", "Rental requests coming soon")
-                }
-                size="lg"
-              />
+              {!product.isForSaleOnly && (
+                <Button
+                  label="Request to Rent"
+                  onPress={() =>
+                    router.push({
+                      pathname: "/(products)/rental-request",
+                      params: { productId: product.id },
+                    })
+                  }
+                  size="lg"
+                />
+              )}
               {product.isForSale && (
                 <Button
                   label="Make an Offer"
                   onPress={() =>
-                    Alert.alert("Coming soon", "Sale offers coming soon")
+                    router.push({
+                      pathname: "/(products)/purchase-request",
+                      params: { productId: product.id },
+                    })
                   }
                   variant="secondary"
                   size="lg"

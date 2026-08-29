@@ -1,16 +1,16 @@
-import React, { useEffect, useState, useCallback, useRef } from "react";
-import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  ActivityIndicator,
-  RefreshControl,
-} from "react-native";
-import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { ProductCard } from "../../components/products/ProductCard";
+import { router } from "expo-router";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  RefreshControl,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { FilterBar } from "../../components/products/FilterBar";
+import { ProductCard } from "../../components/products/ProductCard";
 import { SearchBar } from "../../components/products/SearchBar";
 import { useProducts } from "../../hooks/useProducts";
 
@@ -79,14 +79,26 @@ export default function ProductsScreen() {
               {total > 0 ? `${total} products available` : "Find what you need"}
             </Text>
           </View>
-          <TouchableOpacity
-            onPress={() => router.push("/(products)/create")}
-            className="flex-row items-center gap-1.5 bg-emerald-600 rounded-xl px-3 py-2"
-            activeOpacity={0.8}
-          >
-            <Ionicons name="add" size={16} color="#fff" />
-            <Text className="text-white text-xs font-semibold">List Item</Text>
-          </TouchableOpacity>
+          <View className="flex-row items-center gap-2">
+            <TouchableOpacity
+              onPress={() => router.push("/(products)/requests")}
+              className="flex-row items-center gap-1.5 bg-white border border-gray-200 rounded-xl px-3 py-2"
+              activeOpacity={0.8}
+            >
+              <Ionicons name="receipt-outline" size={16} color="#10b981" />
+              <Text className="text-emerald-700 text-xs font-semibold">
+                Requests
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => router.push("/(products)/create")}
+              className="flex-row items-center gap-1.5 bg-emerald-600 rounded-xl px-3 py-2"
+              activeOpacity={0.8}
+            >
+              <Ionicons name="add" size={16} color="#fff" />
+              <Text className="text-white text-xs font-semibold">List Item</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         <SearchBar
