@@ -751,12 +751,11 @@ export interface PurchaseRequestListResponse {
     totalPages: number;
   };
 }
-
 /**
  * Buyer:
  * Place a purchase request
  *
- * POST /api/v1/purchase-requests/place
+ * POST /api/v1/purchase/place
  */
 export const placePurchaseRequest = (
   data: PlacePurchaseRequestPayload
@@ -765,7 +764,7 @@ export const placePurchaseRequest = (
     success: boolean;
     message: string;
     data: PurchaseRequest;
-  }>("/api/v1/purchase-requests/place", data);
+  }>("/api/v1/purchase/place", data);
 };
 
 
@@ -773,7 +772,7 @@ export const placePurchaseRequest = (
  * Buyer:
  * Cancel a purchase request
  *
- * PUT /api/v1/purchase-requests/:requestId/cancel
+ * PUT /api/v1/purchase/:requestId/cancel
  */
 export const cancelPurchaseRequest = (
   requestId: string,
@@ -784,7 +783,7 @@ export const cancelPurchaseRequest = (
     message: string;
     data: PurchaseRequest;
   }>(
-    `/api/v1/purchase-requests/${requestId}/cancel`,
+    `/api/v1/purchase/${requestId}/cancel`,
     {
       buyerCancelReason,
     }
@@ -796,7 +795,7 @@ export const cancelPurchaseRequest = (
  * Buyer:
  * Get purchase requests placed by current user
  *
- * GET /api/v1/purchase-requests/placed
+ * GET /api/v1/purchase/placed
  */
 export const getPlacedPurchaseRequests = (params?: {
   status?: string;
@@ -804,7 +803,7 @@ export const getPlacedPurchaseRequests = (params?: {
   limit?: number;
 }) => {
   return api.get<PurchaseRequestListResponse>(
-    "/api/v1/purchase-requests/placed",
+    "/api/v1/purchase/placed",
     {
       params,
     }
@@ -816,7 +815,7 @@ export const getPlacedPurchaseRequests = (params?: {
  * Seller:
  * Accept a purchase request
  *
- * PUT /api/v1/purchase-requests/:requestId/accept
+ * PUT /api/v1/purchase/:requestId/accept
  */
 export const acceptPurchaseRequest = (
   requestId: string,
@@ -827,7 +826,7 @@ export const acceptPurchaseRequest = (
     message: string;
     data: PurchaseRequest;
   }>(
-    `/api/v1/purchase-requests/${requestId}/accept`,
+    `/api/v1/purchase/${requestId}/accept`,
     data
   );
 };
@@ -837,7 +836,7 @@ export const acceptPurchaseRequest = (
  * Seller:
  * Reject a purchase request
  *
- * PUT /api/v1/purchase-requests/:requestId/reject
+ * PUT /api/v1/purchase/:requestId/reject
  */
 export const rejectPurchaseRequest = (
   requestId: string,
@@ -848,7 +847,7 @@ export const rejectPurchaseRequest = (
     message: string;
     data: PurchaseRequest;
   }>(
-    `/api/v1/purchase-requests/${requestId}/reject`,
+    `/api/v1/purchase/${requestId}/reject`,
     {
       sellerRejectReason,
     }
@@ -860,7 +859,7 @@ export const rejectPurchaseRequest = (
  * Seller:
  * Get purchase requests received for own products
  *
- * GET /api/v1/purchase-requests/received
+ * GET /api/v1/purchase/received
  */
 export const getReceivedPurchaseRequests = (params?: {
   status?: string;
@@ -868,7 +867,7 @@ export const getReceivedPurchaseRequests = (params?: {
   limit?: number;
 }) => {
   return api.get<PurchaseRequestListResponse>(
-    "/api/v1/purchase-requests/received",
+    "/api/v1/purchase/received",
     {
       params,
     }
