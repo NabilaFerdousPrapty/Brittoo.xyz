@@ -873,3 +873,150 @@ export const getReceivedPurchaseRequests = (params?: {
     }
   );
 };
+
+// ============================================================
+// CHAT APIs
+// ============================================================
+
+export interface ChatBasicUser {
+  id: string;
+  name: string;
+  email: string;
+}
+
+export interface ChatProduct {
+  id: string;
+  name: string;
+  productImages: string[];
+  askingPrice: number | null;
+  minPrice: number | null;
+  isForSale?: boolean;
+}
+
+export interface ChatMessage {
+  id: string;
+  chatRoomId: string;
+  senderId: string;
+  content: string;
+  isRead: boolean;
+  createdAt: string;
+  sender: ChatBasicUser;
+}
+
+export interface ChatRoom {
+  id: string;
+  productId: string;
+  buyerId: string;
+  sellerId: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  product: ChatProduct;
+  buyer: ChatBasicUser;
+  seller: ChatBasicUser;
+  messages: ChatMessage[];
+  totalMessages?: number;
+  hasMore?: boolean;
+  isSellerOnline?: boolean;
+  isPartnerOnline?: boolean;
+  unreadCount?: number;
+  _count?: { messages: number };
+}
+
+export interface ChatMessagesData {
+  messages: ChatMessage[];
+  chatRoom: {
+    id: string;
+    product: ChatProduct;
+    buyer: ChatBasicUser;
+    seller: ChatBasicUser;
+    buyerId: string;
+    sellerId: string;
+    isPartnerOnline: boolean;
+  };
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalMessages: number;
+    hasMore: boolean;
+  };
+}
+
+export interface CreateOrGetChatRoomResponse {
+  success: boolean;
+  message: string;
+  data: ChatRoom;
+}
+
+export interface GetMyChatRoomsResponse {
+  success: boolean;
+  message: string;
+  data: ChatRoom[];
+}
+
+export interface GetChatMessagesResponse {
+  success: boolean;
+  message: string;
+  data: ChatMessagesData;
+}
+
+export interface DeleteChatRoomResponse {
+  success: boolean;
+  message: string;
+}
+
+export interface GetAllChatRoomsAdminResponse {
+  success: boolean;
+  message: string;
+  data: ChatRoom[];
+}
+
+// ─── Chat — User ──────────────────────────────────────────────────────────────
+
+/**
+ * Create a chat room for a product (as buyer), or fetch the existing one
+ *
+ * POST /api/v1/chat/room
+ */
+export const createOrGetChatRoom = (productId: string) =>
+  api.post<CreateOrGetChatRoomResponse>("/api/v1/chat/room", { productId });
+
+/**
+ * Get all chat rooms (buyer + seller side) for the current user
+ *
+ * GET /api/v1/chat/rooms
+ */
+export const getMyChatRooms = () =>
+  api.get<GetMyChatRoomsResponse>("/api/v1/chat/rooms");
+
+/**
+ * Get paginated messages for a chat room. Also marks incoming messages as read.
+ *
+ * GET /api/v1/chat/room/:chatRoomId/messages
+ */
+export const getChatMessages = (
+  chatRoomId: string,
+  params?: { page?: number; limit?: number },
+) =>
+  api.get<GetChatMessagesResponse>(
+    `/api/v1/chat/room/${chatRoomId}/messages`,
+    { params },
+  );
+
+// ─── Chat — Admin ─────────────────────────────────────────────────────────────
+
+/**
+ * Admin: get all chat rooms across the platform
+ *
+ * GET /api/v1/chat/admin/rooms
+ */
+export const adminGetAllChatRooms = () =>
+  api.get<GetAllChatRoomsAdminResponse>("/api/v1/chat/admin/rooms");
+
+/**
+ * Admin: soft-delete (deactivate) a chat room
+ *
+ * DELETE /api/v1/chat/room/:chatRoomId
+ */
+export const adminDeleteChatRoom = (chatRoomId: string) =>
+  api.delete<DeleteChatRoomResponse>(`/api/v1/chat/room/${chatRoomId}`);
