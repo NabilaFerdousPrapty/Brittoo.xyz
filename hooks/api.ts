@@ -1020,3 +1020,288 @@ export const adminGetAllChatRooms = () =>
  */
 export const adminDeleteChatRoom = (chatRoomId: string) =>
   api.delete<DeleteChatRoomResponse>(`/api/v1/chat/room/${chatRoomId}`);
+
+// ============================================================
+// NOTIFICATION APIs
+// ============================================================
+
+export interface PushSubscriptionKeys {
+  p256dh: string;
+  auth: string;
+}
+
+export interface PushSubscriptionPayload {
+  endpoint: string;
+  keys: PushSubscriptionKeys;
+}
+
+export interface UserNotification {
+  id: string;
+  userId: string;
+  title: string;
+  body: string;
+  data: { url?: string; [key: string]: any };
+  isRead: boolean;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface SentNotification {
+  id: string;
+  title: string;
+  body: string;
+  targets: string; // 'all' | comma-separated userIds/emails
+  createdAt: string;
+}
+
+export interface GetUserNotificationsResponse {
+  success: boolean;
+  data: UserNotification[];
+}
+
+export interface GetSentNotificationsResponse {
+  success: boolean;
+  data: SentNotification[];
+}
+
+export interface SendCustomNotificationPayload {
+  title: string;
+  body: string;
+  targets: "all" | string[]; // array of userIds or emails
+  url?: string;
+}
+
+// ─── Notifications — User ─────────────────────────────────────────────────────
+
+/**
+ * Save/update the device's push subscription
+ *
+ * POST /api/v1/notifications/subscribe
+ */
+export const savePushSubscription = (subscription: PushSubscriptionPayload) =>
+  api.post<{ success: boolean; message: string }>(
+    "/api/v1/notifications/subscribe",
+    { subscription },
+  );
+
+/**
+ * Get notifications for the logged-in user
+ *
+ * GET /api/v1/notifications
+ */
+export const getMyNotifications = () =>
+  api.get<GetUserNotificationsResponse>("/api/v1/notifications");
+
+/**
+ * Mark a notification as read
+ *
+ * PUT /api/v1/notifications/:id/read
+ */
+export const markNotificationAsRead = (id: string) =>
+  api.put<{ success: boolean }>(`/api/v1/notifications/${id}/read`);
+
+// ─── Notifications — Admin ────────────────────────────────────────────────────
+
+/**
+ * Admin: send a custom notification to all users or a target list
+ *
+ * POST /api/v1/notifications/custom
+ */
+export const adminSendCustomNotification = (
+  data: SendCustomNotificationPayload,
+) =>
+  api.post<{ success: boolean; message: string }>(
+    "/api/v1/notifications/custom",
+    data,
+  );
+
+/**
+ * Admin: get history of previously sent custom notifications
+ *
+ * GET /api/v1/notifications/sent
+ */
+export const adminGetSentNotifications = () =>
+  api.get<GetSentNotificationsResponse>("/api/v1/notifications/sent");
+
+// ============================================================
+// BCC (Blue Cache Credit) APIs
+// ============================================================
+
+export interface BccWallet {
+  id: string;
+  userId: string;
+  availableBalance: number;
+  lockedBalance: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BccTransaction {
+  id: string;
+  userId: string;
+  walletId: string;
+  amount: number;
+  rentalRequestId: string | null;
+  paymentGateway: string | null;
+  transactionId: string | null;
+  numberUsedInTrx?: string | null;
+  transactionType:
+    | "RENT_DEPOSIT"
+    | "DEPOSIT_REFUND"
+    | "BONUS_CREDIT"
+    | "PURCHASE_BCC"
+    | "MONEY_WITHDRAWAL"
+    | "ADJUSTMENT";
+  status: "PENDING" | "ACCEPTED" | "REJECTED";
+  rejectReason?: string | null;
+  refundTrxId?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BuyBccPayload {
+  paymentGateway: string;
+  amount: number;
+  transactionId: string;
+  trxNo: string; // phone number used for the transaction, WITHOUT country code — backend prefixes "+880"
+}
+
+export interface BuyBccResponse {
+  success: boolean;
+  message: string;
+  data: BccTransaction;
+}
+
+export interface AvailableBccResponse {
+  success: boolean;
+  isWalletPresent: boolean;
+  message: string;
+  data: BccWallet | { availableBalance: number; lockedBalance: number };
+}
+
+export interface PendingBccRequestsResponse {
+  success: boolean;
+  message: string;
+  data: (BccTransaction & { user: User })[];
+  count: number;
+}
+
+// ─── BCC — User ───────────────────────────────────────────────────────────────
+
+/**
+ * Submit a BCC purchase request (goes to PENDING until admin accepts)
+ * Requires the user to be verified (verificationMiddleware on backend)
+ *
+ * POST /api/v1/bcc/buy
+ */
+export const buyBcc = (data: BuyBccPayload) =>
+  api.post<BuyBccResponse>("/api/v1/bcc/buy", data);
+
+/**
+ * Get a user's BCC wallet balance
+ *
+ * GET /api/v1/bcc/available/:userId
+ */
+export const getUsersAvailableBcc = (userId: string) =>
+  api.get<AvailableBccResponse>(`/api/v1/bcc/available/${userId}`);
+
+// ─── BCC — Admin ──────────────────────────────────────────────────────────────
+
+/**
+ * Admin: get all pending BCC purchase requests
+ *
+ * GET /api/v1/bcc/pending
+ */
+export const adminGetPendingBccRequests = () =>
+  api.get<PendingBccRequestsResponse>("/api/v1/bcc/pending");
+
+/**
+ * Admin: accept a pending BCC purchase request
+ * NOTE: backend route uses POST, not PUT/PATCH
+ *
+ * POST /api/v1/bcc/accept/:creditId
+ */
+export const adminAcceptBccRequest = (creditId: string) =>
+  api.post<{ success: boolean; message: string }>(
+    `/api/v1/bcc/accept/${creditId}`,
+  );
+
+/**
+ * Admin: reject a pending BCC purchase request
+ *
+ * PUT /api/v1/bcc/reject/:creditId
+ */
+export const adminRejectBccRequest = (
+  creditId: string,
+  data: { rejectReason: string; refundTrxId?: string },
+) =>
+  api.put<{ success: boolean; message: string }>(
+    `/api/v1/bcc/reject/${creditId}`,
+    data,
+  );
+
+// ============================================================
+// RCC (Red Cache Credit) APIs
+// ============================================================
+
+export interface RedCacheCredit {
+  id: string;
+  amount: number;
+  inUse: number;
+  isFrozen: boolean;
+  userId: string;
+  sourceProductId: string;
+  isGiftCredit: boolean;
+  validityDate: string | null;
+  giftReason?: string | null;
+  giftedBy?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  sourceProduct: {
+    id: string;
+    name: string;
+    productSL: string;
+    productType?: string;
+    optimizedImages?: string[];
+    pricePerDay?: number;
+  };
+}
+
+export interface AvailableRccResponse {
+  success: boolean;
+  message: string;
+  data: RedCacheCredit[];
+}
+
+export interface GiftRccPayload {
+  userId: string;
+  amount: number | string;
+  validityDays?: number | string;
+  giftReason?: string;
+}
+
+export interface GiftRccResponse {
+  success: boolean;
+  message: string;
+  data: RedCacheCredit;
+}
+
+// ─── RCC — User ───────────────────────────────────────────────────────────────
+
+/**
+ * Get a user's available Red Cache Credits (with source product info)
+ *
+ * GET /api/v1/rcc/available/:userId
+ */
+export const getUsersAvailableRcc = (userId: string) =>
+  api.get<AvailableRccResponse>(`/api/v1/rcc/available/${userId}`);
+
+// ─── RCC — Admin ──────────────────────────────────────────────────────────────
+
+/**
+ * Admin: gift RCC to a user (creates a virtual product + gift credit)
+ *
+ * POST /api/v1/rcc/gift-rcc
+ */
+export const adminGiftRcc = (data: GiftRccPayload) =>
+  api.post<GiftRccResponse>("/api/v1/rcc/gift-rcc", data);
