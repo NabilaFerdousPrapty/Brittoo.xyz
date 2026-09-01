@@ -550,7 +550,7 @@ export interface UserOverviewResponse {
 }
 
 export const getUserOverview = () =>
-  api.get<UserOverviewResponse>("/api/v1/dashboard/overview");
+  api.get<UserOverviewResponse>("/api/v1/user-dashboard/overview");
 
 export interface UserCreditHistoryDashResponse {
   success: boolean;
@@ -636,7 +636,7 @@ export interface UserCreditHistoryDashResponse {
 
 export const getUserCreditHistoryDash = () =>
   api.get<UserCreditHistoryDashResponse>(
-    "/api/v1/dashboard/credits/credit-history",
+    "/api/v1/user-dashboard/credits/credit-history",
   );
 
 
