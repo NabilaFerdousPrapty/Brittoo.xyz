@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import Entypo from '@expo/vector-icons/Entypo';
 import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { useEffect, useState } from "react";
@@ -294,7 +295,18 @@ export default function DashboardScreen() {
           </View>
           <Ionicons name="arrow-forward" size={18} color="#fff" />
         </TouchableOpacity>
-
+        <TouchableOpacity
+          onPress={() => router.push("/profile")}
+          className="w-9 h-9 rounded-full bg-emerald-50 items-center justify-center"
+        >
+          <Ionicons name="person-outline" size={18} color="#059669" />
+        </TouchableOpacity>
+         <TouchableOpacity
+          onPress={() => router.push("/inbox")}
+          className="w-9 h-9 rounded-full bg-emerald-50 items-center justify-center"
+        >
+         <Entypo name="message" size={24} color="black" />
+        </TouchableOpacity>
         {/* Verification status */}
         <View className={`${v.bg} border ${v.border} rounded-2xl p-4 mb-4`}>
           <View className="flex-row items-center justify-between">

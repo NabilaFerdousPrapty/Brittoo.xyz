@@ -26,8 +26,9 @@ export default function RootLayout() {
 
         <Stack.Screen name="(auth)/verify-identity" />
         <Stack.Screen name="dashboard" />
-        <Stack.Screen name="wallet" />
+        <Stack.Screen name="profile"/>
         <Stack.Screen name="how-it-works"/>
+        <Stack.Screen name="inbox"/>
 
         {/* Product screens */}
         <Stack.Screen name="(products)/index" />
