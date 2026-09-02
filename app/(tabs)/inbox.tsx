@@ -3,15 +3,15 @@ import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { useCallback, useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    RefreshControl,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  RefreshControl,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { STORAGE_KEYS } from "../constants";
-import { ChatRoom, getMyChatRooms } from "../hooks/api";
+import { STORAGE_KEYS } from "../../constants";
+import { ChatRoom, getMyChatRooms } from "../../hooks/api";
 
 // NOTE: tapping a room pushes to a per-room chat screen that doesn't exist
 // yet. Build it next (getChatMessages for history + a socket.io-client

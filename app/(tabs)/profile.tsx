@@ -11,11 +11,11 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { Button } from "../components/button";
-import { STORAGE_KEYS } from "../constants";
-import type { UserOverviewResponse } from "../hooks/api";
-import { getCurrentUser, getUserOverview } from "../hooks/api";
-import type { User } from "../hooks/useAuth";
+import { Button } from "../../components/button";
+import { STORAGE_KEYS } from "../../constants";
+import type { UserOverviewResponse } from "../../hooks/api";
+import { getCurrentUser, getUserOverview } from "../../hooks/api";
+import type { User } from "../../hooks/useAuth";
 
 type DashboardOverview = UserOverviewResponse["data"];
 

@@ -501,23 +501,29 @@ export const adminGetAnalytics = () =>
 
 export const adminHoldProduct = (productId: string) =>
   api.put(`/api/v1/admin/hold/${productId}`, {});
-
 // ─── Admin — Purchase Requests ────────────────────────────────────────────────
 
-export const adminGetPurchaseRequests = () => api.get("/api/v1/purchase-requests/all");
+export const adminGetPurchaseRequests = (params?: { status?: string; page?: number; limit?: number }) =>
+  api.get("/api/v1/admin/purchase/all", { params });
 
-export const adminUpdatePurchaseStatus = (requestId: string, status: string) =>
-  api.put(`/api/v1/purchase-requests/${requestId}/status`, { status });
+export const adminUpdatePurchaseStatus = (
+  requestId: string,
+  status: string,
+  brittooRejectReason?: string,
+) =>
+  api.put(`/api/v1/admin/purchase/${requestId}/status`, {
+    status,
+    ...(brittooRejectReason ? { brittooRejectReason } : {}),
+  });
 
 export const adminUpdatePurchasePayment = (
   requestId: string,
   paymentStatus: string,
 ) =>
-  api.put(`/api/v1/purchase-requests/${requestId}/payment-status`, {
+  api.put(`/api/v1/admin/purchase/${requestId}/payment-status`, {
     paymentStatus,
   });
-
-
+  
 export interface UserOverviewResponse {
   success: boolean;
   message: string;

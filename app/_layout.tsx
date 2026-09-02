@@ -14,27 +14,24 @@ export default function RootLayout() {
         }}
       >
         <Stack.Screen name="index" />
+
+        {/* Tab group */}
+        <Stack.Screen name="(tabs)" />
+
         {/* Admin screens */}
         <Stack.Screen name="(admin)" />
-        <Stack.Screen name="(admin)/users" />
-        <Stack.Screen name="(admin)/products" />
 
         <Stack.Screen name="(auth)/signup" />
         <Stack.Screen name="(auth)/login" />
         <Stack.Screen name="(auth)/verify-otp" />
         <Stack.Screen name="(auth)/forgot-password" />
-
         <Stack.Screen name="(auth)/verify-identity" />
-        <Stack.Screen name="dashboard" />
-        <Stack.Screen name="profile"/>
-        <Stack.Screen name="how-it-works"/>
-        <Stack.Screen name="inbox"/>
 
-        {/* Product screens */}
-        <Stack.Screen name="(products)/index" />
-        <Stack.Screen name="(products)/[id]" />
-        <Stack.Screen name="(products)/create" />
-        <Stack.Screen name="(products)/edit" />
+        <Stack.Screen name="how-it-works" />
+        <Stack.Screen name="wallet" />
+
+        {/* Product screens (still full-screen stack, no tab bar) */}
+        <Stack.Screen name="(products)" />
       </Stack>
     </>
   );

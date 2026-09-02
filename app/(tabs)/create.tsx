@@ -131,7 +131,7 @@ export default function CreateProductScreen() {
                   params: { id: res.data.product.id },
                 }),
             },
-            { text: "Browse", onPress: () => router.replace("/(products)/") },
+            { text: "Browse", onPress: () => router.replace("/listing") },
           ],
         );
       }

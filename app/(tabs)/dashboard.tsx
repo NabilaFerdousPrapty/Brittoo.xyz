@@ -1,5 +1,4 @@
 import { Ionicons } from "@expo/vector-icons";
-import Entypo from '@expo/vector-icons/Entypo';
 import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { useEffect, useState } from "react";
@@ -11,10 +10,10 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { Button } from "../components/button";
-import { STORAGE_KEYS } from "../constants";
-import { getCurrentUser } from "../hooks/api";
-import type { User } from "../hooks/useAuth";
+import { Button } from "../../components/button";
+import { STORAGE_KEYS } from "../../constants";
+import { getCurrentUser } from "../../hooks/api";
+import type { User } from "../../hooks/useAuth";
 
 const vConfig = {
   UNVERIFIED: {
@@ -274,7 +273,7 @@ export default function DashboardScreen() {
 
         {/* Quick nav to products */}
         <TouchableOpacity
-          onPress={() => router.push("/(products)/")}
+          onPress={() => router.push("/listing")}
           className="flex-row items-center justify-between bg-emerald-600 rounded-2xl p-4 mb-4"
           activeOpacity={0.85}
           style={{
@@ -295,7 +294,7 @@ export default function DashboardScreen() {
           </View>
           <Ionicons name="arrow-forward" size={18} color="#fff" />
         </TouchableOpacity>
-        <TouchableOpacity
+        {/* <TouchableOpacity
           onPress={() => router.push("/profile")}
           className="w-9 h-9 rounded-full bg-emerald-50 items-center justify-center"
         >
@@ -306,7 +305,7 @@ export default function DashboardScreen() {
           className="w-9 h-9 rounded-full bg-emerald-50 items-center justify-center"
         >
          <Entypo name="message" size={24} color="black" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         {/* Verification status */}
         <View className={`${v.bg} border ${v.border} rounded-2xl p-4 mb-4`}>
           <View className="flex-row items-center justify-between">

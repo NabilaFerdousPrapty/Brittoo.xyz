@@ -99,6 +99,9 @@ export default function AdminLayout() {
       <Stack.Screen name="rental-requests" />
       <Stack.Screen name="purchase-requests" />
       <Stack.Screen name="products" />
+      <Stack.Screen name="chatroom"/>
+      <Stack.Screen name="chats/[chatRoomId]"/>
+      
     </Stack>
   );
 }

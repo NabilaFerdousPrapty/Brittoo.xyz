@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -28,11 +28,7 @@ export default function ProductsScreen() {
   const [productType, setProductType] = useState("");
   const [isAiMode, setIsAiMode] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
-
-  // Initial load
-  useEffect(() => {
-    fetchProducts({}, true);
-  }, []);
+  const isFirstFocus = useRef(true);
 
   const buildParams = useCallback(
     () => ({
@@ -40,6 +36,36 @@ export default function ProductsScreen() {
       ...(productType ? { productType } : {}),
     }),
     [search, productType, isAiMode],
+  );
+
+  // Keep latest buildParams/refresh available to the focus effect
+  // WITHOUT putting them in its dependency array (their identity may
+  // change every render, which would otherwise re-fire the effect
+  // on every render instead of only on actual focus changes).
+  const buildParamsRef = useRef(buildParams);
+  const refreshRef = useRef(refresh);
+  useEffect(() => {
+    buildParamsRef.current = buildParams;
+    refreshRef.current = refresh;
+  }, [buildParams, refresh]);
+
+  // Initial load (runs once on mount)
+  useEffect(() => {
+    fetchProducts({}, true);
+  }, []);
+
+  // Refetch ONLY on actual tab focus transitions (e.g. returning from
+  // "create"), not on every re-render.
+  useFocusEffect(
+    useCallback(() => {
+      if (isFirstFocus.current) {
+        isFirstFocus.current = false;
+        return;
+      }
+      refreshRef.current(buildParamsRef.current());
+      // Empty deps: this callback's identity never changes, so
+      // useFocusEffect only re-runs it on real focus/blur transitions.
+    }, []),
   );
 
   // Debounced search
@@ -91,7 +117,7 @@ export default function ProductsScreen() {
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => router.push("/(products)/create")}
+              onPress={() => router.push("/create")}
               className="flex-row items-center gap-1.5 bg-emerald-600 rounded-xl px-3 py-2"
               activeOpacity={0.8}
             >
