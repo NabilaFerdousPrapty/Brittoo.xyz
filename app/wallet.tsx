@@ -1,8 +1,8 @@
+// SAVE AS: app/wallet.tsx (overwrite existing)
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   Image,
   RefreshControl,
   ScrollView,
@@ -12,432 +12,360 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
-  BACKEND_URL,
   getUserCreditHistoryDash,
-  UserCreditHistoryDashResponse,
+  type UserCreditHistoryDashResponse,
 } from "../hooks/api";
 
-const TX_TYPE_COLORS: Record<string, { bg: string; text: string }> = {
-  RENT_DEPOSIT: { bg: "bg-blue-50", text: "text-blue-600" },
-  DEPOSIT_REFUND: { bg: "bg-violet-50", text: "text-violet-600" },
-  BONUS_CREDIT: { bg: "bg-emerald-50", text: "text-emerald-600" },
-  PURCHASE_BCC: { bg: "bg-emerald-50", text: "text-emerald-600" },
-  MONEY_WITHDRAWAL: { bg: "bg-red-50", text: "text-red-500" },
-  ADJUSTMENT: { bg: "bg-gray-100", text: "text-gray-500" },
+type WalletData = UserCreditHistoryDashResponse["data"];
+
+const TABS = ["Overview", "Credits", "Transactions", "History"] as const;
+type Tab = (typeof TABS)[number];
+
+const statusStyle: Record<string, { bg: string; text: string }> = {
+  PENDING: { bg: "bg-amber-50", text: "text-amber-700" },
+  ACCEPTED: { bg: "bg-green-50", text: "text-green-700" },
+  REJECTED: { bg: "bg-red-50", text: "text-red-700" },
 };
 
-const TX_STATUS_COLORS: Record<string, string> = {
-  ACCEPTED: "text-emerald-600",
-  PENDING: "text-amber-600",
-  REJECTED: "text-red-500",
-};
-
-function SummaryCard({
-  label,
-  value,
-  color,
-}: {
-  label: string;
-  value: string | number;
-  color?: string;
-}) {
-  return (
-    <View className="flex-1 bg-gray-50 border border-gray-100 rounded-2xl p-3">
-      <Text className="text-gray-400 text-xs mb-1">{label}</Text>
-      <Text className={`text-base font-extrabold ${color ?? "text-gray-900"}`}>
-        {value}
-      </Text>
-    </View>
-  );
+function formatLabel(value: string) {
+  return value
+    .toLowerCase()
+    .split("_")
+    .map((w) => w[0]?.toUpperCase() + w.slice(1))
+    .join(" ");
 }
 
-type TabId = "bcc" | "rcc" | "rentals";
+function timeAgo(dateStr: string) {
+  const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+  if (diff < 60) return "Just now";
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  if (diff < 2592000) return `${Math.floor(diff / 86400)}d ago`;
+  return `${Math.floor(diff / 2592000)}mo ago`;
+}
 
 export default function WalletScreen() {
-  const [data, setData] = useState<
-    UserCreditHistoryDashResponse["data"] | null
-  >(null);
+  const [data, setData] = useState<WalletData | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [tab, setTab] = useState<TabId>("bcc");
+  const [tab, setTab] = useState<Tab>("Overview");
 
-  const load = useCallback(async () => {
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
     try {
       const res = await getUserCreditHistoryDash();
-      setData(res.data.data);
+      if (res.data?.data) setData(res.data.data);
     } catch (e) {
-      console.error("Credit history error:", e);
+      console.error("Failed to load wallet data:", e);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
-
-  useEffect(() => {
-    load();
-  }, [load]);
+  };
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-white items-center justify-center">
-        <ActivityIndicator size="large" color="#10b981" />
-      </SafeAreaView>
+      <View className="flex-1 bg-white items-center justify-center">
+        <Text className="text-gray-400 text-sm">Loading wallet...</Text>
+      </View>
     );
   }
 
-  if (!data) {
-    return (
-      <SafeAreaView className="flex-1 bg-white items-center justify-center px-6">
-        <Ionicons name="alert-circle-outline" size={40} color="#e5e7eb" />
-        <Text className="text-gray-400 text-sm mt-3">
-          Couldn't load wallet data
-        </Text>
-        <TouchableOpacity
-          onPress={load}
-          className="mt-4 bg-emerald-500 rounded-full px-5 py-2.5"
-        >
-          <Text className="text-white text-sm font-semibold">Try again</Text>
-        </TouchableOpacity>
-      </SafeAreaView>
-    );
-  }
-
-  const { summary, bccTransactions, redCacheCredits, rentalHistory } = data;
+  const bcc = data?.summary.bcc;
+  const rcc = data?.summary.rcc;
+  const rentals = data?.summary.rentals;
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <View className="flex-1 bg-gray-50">
       {/* Header */}
-      <View className="px-5 pt-2 pb-3 border-b border-gray-100 flex-row items-center gap-3 bg-white">
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={22} color="#111827" />
-        </TouchableOpacity>
-        <Text className="text-gray-900 text-lg font-bold">
-          Wallet & Credits
-        </Text>
+      <SafeAreaView edges={["top"]} className="bg-emerald-600">
+        <View className="flex-row items-center px-4 pt-2 pb-4">
+          <TouchableOpacity
+            onPress={() => router.back()}
+            className="w-9 h-9 rounded-full bg-white/20 items-center justify-center"
+          >
+            <Ionicons name="chevron-back" size={20} color="#fff" />
+          </TouchableOpacity>
+          <Text className="text-white font-semibold text-lg ml-3">
+            Wallet
+          </Text>
+        </View>
+
+        {/* Balance */}
+        <View className="px-6 pb-6">
+          <Text className="text-emerald-100 text-xs">Available balance</Text>
+          <Text className="text-white font-bold text-3xl mt-1">
+            {bcc?.availableBalance ?? 0} BCC
+          </Text>
+          {!!bcc?.lockedBalance && (
+            <Text className="text-emerald-100 text-xs mt-1">
+              {bcc.lockedBalance} BCC locked in active rentals
+            </Text>
+          )}
+        </View>
+      </SafeAreaView>
+
+      {/* Tabs */}
+      <View className="flex-row bg-white border-b border-gray-100 px-2">
+        {TABS.map((t) => (
+          <TouchableOpacity
+            key={t}
+            onPress={() => setTab(t)}
+            className="flex-1 items-center py-3"
+          >
+            <Text
+              className={`text-xs font-medium ${tab === t ? "text-emerald-600" : "text-gray-400"}`}
+            >
+              {t}
+            </Text>
+            {tab === t && (
+              <View className="h-0.5 w-8 bg-emerald-600 rounded-full mt-1" />
+            )}
+          </TouchableOpacity>
+        ))}
       </View>
 
       <ScrollView
-        contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
+        className="flex-1"
+        contentContainerStyle={{ padding: 20, paddingBottom: 60 }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => {
               setRefreshing(true);
-              load();
+              fetchData();
             }}
             tintColor="#10b981"
           />
         }
       >
-        {/* BCC summary */}
-        <Text className="text-gray-400 text-xs uppercase tracking-wider font-semibold mb-3">
-          Blue Credit Wallet
-        </Text>
-        <View className="flex-row gap-2 mb-2">
-          <SummaryCard
-            label="Available"
-            value={`${summary.bcc.availableBalance ?? 0} BCC`}
-            color="text-blue-600"
-          />
-          <SummaryCard
-            label="Locked"
-            value={`${summary.bcc.lockedBalance ?? 0} BCC`}
-            color="text-amber-600"
-          />
-        </View>
-        <View className="flex-row gap-2 mb-2">
-          <SummaryCard
-            label="Purchased"
-            value={`${summary.bcc.totalPurchased ?? 0} BCC`}
-            color="text-emerald-600"
-          />
-          <SummaryCard
-            label="Spent"
-            value={`${summary.bcc.totalSpent ?? 0} BCC`}
-            color="text-red-500"
-          />
-        </View>
-        {summary.bcc.totalPendingBcc > 0 && (
-          <View className="bg-amber-50 border border-amber-100 rounded-xl p-3 mb-2 flex-row items-center gap-2">
-            <Ionicons name="time-outline" size={14} color="#d97706" />
-            <Text className="text-amber-700 text-xs flex-1">
-              {summary.bcc.totalPendingBcc} BCC pending approval (
-              {summary.bcc.pendingBccRequests.length} requests)
-            </Text>
-          </View>
+        {/* ─── Overview ─────────────────────────────────────────────── */}
+        {tab === "Overview" && (
+          <>
+            <View className="flex-row flex-wrap gap-3 mb-4">
+              {[
+                {
+                  label: "Total purchased",
+                  value: `${bcc?.totalPurchased ?? 0} BCC`,
+                  icon: "arrow-down-circle-outline",
+                  color: "#10b981",
+                },
+                {
+                  label: "Total spent",
+                  value: `${bcc?.totalSpent ?? 0} BCC`,
+                  icon: "arrow-up-circle-outline",
+                  color: "#ef4444",
+                },
+                {
+                  label: "RCC available",
+                  value: `${rcc?.availableAmount ?? 0}`,
+                  icon: "pricetag-outline",
+                  color: "#d97706",
+                },
+                {
+                  label: "Completed rentals",
+                  value: `${rentals?.completedRentals ?? 0}`,
+                  icon: "checkmark-done-outline",
+                  color: "#7c3aed",
+                },
+              ].map((stat) => (
+                <View
+                  key={stat.label}
+                  className="bg-white border border-gray-100 rounded-2xl p-4"
+                  style={{ width: "47%" }}
+                >
+                  <Ionicons name={stat.icon as any} size={18} color={stat.color} />
+                  <Text className="text-gray-400 text-xs mt-2">
+                    {stat.label}
+                  </Text>
+                  <Text
+                    style={{ color: stat.color }}
+                    className="font-semibold text-base mt-0.5"
+                  >
+                    {stat.value}
+                  </Text>
+                </View>
+              ))}
+            </View>
+
+            {!!bcc?.pendingBccRequests?.length && (
+              <View className="bg-amber-50 border border-amber-100 rounded-2xl p-4 mb-4">
+                <Text className="text-amber-800 font-medium text-sm">
+                  {bcc.pendingBccRequests.length} pending BCC purchase
+                  {bcc.pendingBccRequests.length > 1 ? "s" : ""}
+                </Text>
+                <Text className="text-amber-700 text-xs mt-1">
+                  Total pending: {bcc.totalPendingBcc} BCC
+                </Text>
+              </View>
+            )}
+
+            <View className="bg-white border border-gray-100 rounded-2xl p-4">
+              <Text className="text-gray-400 text-xs font-medium uppercase tracking-wider mb-3">
+                Rental summary
+              </Text>
+              <View className="flex-row justify-between py-2 border-b border-gray-50">
+                <Text className="text-gray-500 text-sm">Total rentals</Text>
+                <Text className="text-gray-900 text-sm font-medium">
+                  {rentals?.totalRentals ?? 0}
+                </Text>
+              </View>
+              <View className="flex-row justify-between py-2 border-b border-gray-50">
+                <Text className="text-gray-500 text-sm">Total value</Text>
+                <Text className="text-gray-900 text-sm font-medium">
+                  {rentals?.totalValue ?? 0} BCC
+                </Text>
+              </View>
+              <View className="flex-row justify-between py-2">
+                <Text className="text-gray-500 text-sm">Average value</Text>
+                <Text className="text-gray-900 text-sm font-medium">
+                  {(rentals?.averageRentalValue ?? 0).toFixed(1)} BCC
+                </Text>
+              </View>
+            </View>
+          </>
         )}
 
-        {/* RCC summary */}
-        <Text className="text-gray-400 text-xs uppercase tracking-wider font-semibold mb-3 mt-3">
-          Red Cache Credits
-        </Text>
-        <View className="flex-row gap-2 mb-5">
-          <SummaryCard label="Total" value={`${summary.rcc.totalAmount} CC`} />
-          <SummaryCard
-            label="In Use"
-            value={`${summary.rcc.totalInUse} CC`}
-            color="text-amber-600"
-          />
-          <SummaryCard
-            label="Available"
-            value={`${summary.rcc.availableAmount} CC`}
-            color="text-emerald-600"
-          />
-        </View>
+        {/* ─── RCC Credits ──────────────────────────────────────────── */}
+        {tab === "Credits" && (
+          <>
+            <View className="flex-row gap-3 mb-4">
+              <View className="flex-1 bg-white border border-gray-100 rounded-2xl p-4">
+                <Text className="text-gray-400 text-xs">Total</Text>
+                <Text className="text-gray-900 font-semibold text-lg mt-0.5">
+                  {rcc?.totalAmount ?? 0}
+                </Text>
+              </View>
+              <View className="flex-1 bg-white border border-gray-100 rounded-2xl p-4">
+                <Text className="text-gray-400 text-xs">In use</Text>
+                <Text className="text-amber-600 font-semibold text-lg mt-0.5">
+                  {rcc?.totalInUse ?? 0}
+                </Text>
+              </View>
+              <View className="flex-1 bg-white border border-gray-100 rounded-2xl p-4">
+                <Text className="text-gray-400 text-xs">Available</Text>
+                <Text className="text-emerald-600 font-semibold text-lg mt-0.5">
+                  {rcc?.availableAmount ?? 0}
+                </Text>
+              </View>
+            </View>
 
-        {/* Rentals strip */}
-        <View className="flex-row gap-2 mb-5">
-          <SummaryCard
-            label="Total Rentals"
-            value={summary.rentals.totalRentals}
-          />
-          <SummaryCard
-            label="Completed"
-            value={summary.rentals.completedRentals}
-            color="text-emerald-600"
-          />
-          <SummaryCard
-            label="Total Spent"
-            value={`${summary.rentals.totalValue} BCC`}
-            color="text-red-500"
-          />
-        </View>
+            {data?.redCacheCredits.length === 0 && (
+              <Text className="text-gray-400 text-sm text-center mt-10">
+                No RCC credits yet.
+              </Text>
+            )}
 
-        {/* Tabs */}
-        <View className="flex-row bg-gray-100 rounded-full p-1 mb-4">
-          {(
-            [
-              { id: "bcc", label: "Transactions" },
-              { id: "rcc", label: "RCC Credits" },
-              { id: "rentals", label: "Rentals" },
-            ] as { id: TabId; label: string }[]
-          ).map((t) => (
-            <TouchableOpacity
-              key={t.id}
-              onPress={() => setTab(t.id)}
-              className={`flex-1 py-2 rounded-full items-center ${tab === t.id ? "bg-white shadow-sm" : ""}`}
-            >
-              <Text
-                className={`text-xs font-semibold ${tab === t.id ? "text-emerald-600" : "text-gray-400"}`}
+            {data?.redCacheCredits.map((credit) => (
+              <View
+                key={credit.id}
+                className="flex-row items-center gap-3 bg-white border border-gray-100 rounded-2xl p-3 mb-3"
               >
-                {t.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* BCC Transactions */}
-        {tab === "bcc" && (
-          <View className="gap-2">
-            {bccTransactions.length === 0 ? (
-              <Text className="text-gray-300 text-sm text-center py-8">
-                No transactions yet
-              </Text>
-            ) : (
-              bccTransactions.map((tx) => {
-                const tc = TX_TYPE_COLORS[tx.transactionType] ?? {
-                  bg: "bg-gray-100",
-                  text: "text-gray-600",
-                };
-                return (
-                  <View
-                    key={tx.id}
-                    className="bg-gray-50 border border-gray-100 rounded-2xl p-3"
-                  >
-                    <View className="flex-row items-center justify-between mb-1">
-                      <View className={`px-2 py-0.5 rounded-full ${tc.bg}`}>
-                        <Text
-                          className={`text-[10px] font-semibold ${tc.text}`}
-                        >
-                          {tx.transactionType.replace(/_/g, " ")}
-                        </Text>
-                      </View>
-                      <Text
-                        className={`text-xs font-semibold ${TX_STATUS_COLORS[tx.status] ?? "text-gray-500"}`}
-                      >
-                        {tx.status}
-                      </Text>
-                    </View>
-                    <View className="flex-row items-center justify-between">
-                      <Text className="text-gray-900 font-extrabold text-sm">
-                        {tx.amount} BCC
-                      </Text>
-                      <Text className="text-gray-400 text-xs">
-                        {new Date(tx.createdAt).toLocaleDateString()}
-                      </Text>
-                    </View>
-                    {tx.paymentGateway && (
-                      <Text className="text-gray-400 text-xs mt-1">
-                        Via {tx.paymentGateway}
-                      </Text>
-                    )}
-                    {tx.rejectReason && (
-                      <Text className="text-red-400 text-xs mt-1">
-                        Reason: {tx.rejectReason}
-                      </Text>
-                    )}
+                <Image
+                  source={{
+                    uri: credit.sourceProduct.optimizedImages?.[0],
+                  }}
+                  className="w-12 h-12 rounded-xl bg-gray-100"
+                />
+                <View className="flex-1">
+                  <Text className="text-gray-900 text-sm font-medium">
+                    {credit.sourceProduct.name}
+                  </Text>
+                  <Text className="text-gray-400 text-[11px] mt-0.5">
+                    {credit.amount} credits · {credit.inUse} in use
+                  </Text>
+                </View>
+                {credit.isFrozen && (
+                  <View className="bg-red-50 px-2 py-1 rounded-full">
+                    <Text className="text-red-600 text-[10px] font-medium">
+                      Frozen
+                    </Text>
                   </View>
-                );
-              })
-            )}
-          </View>
+                )}
+              </View>
+            ))}
+          </>
         )}
 
-        {/* RCC Credits */}
-        {tab === "rcc" && (
-          <View className="gap-2">
-            {redCacheCredits.length === 0 ? (
-              <Text className="text-gray-300 text-sm text-center py-8">
-                No RCC credits yet
+        {/* ─── Transactions ─────────────────────────────────────────── */}
+        {tab === "Transactions" && (
+          <>
+            {data?.bccTransactions.length === 0 && (
+              <Text className="text-gray-400 text-sm text-center mt-10">
+                No transactions yet.
               </Text>
-            ) : (
-              redCacheCredits.map((rcc) => {
-                const imgUrl = rcc.sourceProduct?.optimizedImages?.[0]
-                  ? `${BACKEND_URL}${rcc.sourceProduct.optimizedImages[0]}`
-                  : null;
-                return (
-                  <TouchableOpacity
-                    key={rcc.id}
-                    onPress={() =>
-                      rcc.sourceProduct?.id &&
-                      router.push({
-                        pathname: "/(products)/[id]" as any,
-                        params: { id: rcc.sourceProduct.id },
-                      })
-                    }
-                    activeOpacity={0.85}
-                    className="bg-gray-50 border border-gray-100 rounded-2xl p-3 flex-row gap-3"
-                  >
-                    <View className="w-12 h-12 bg-emerald-50 rounded-xl overflow-hidden items-center justify-center">
-                      {imgUrl ? (
-                        <Image
-                          source={{ uri: imgUrl }}
-                          className="w-full h-full"
-                          resizeMode="cover"
-                        />
-                      ) : (
-                        <Ionicons
-                          name="cube-outline"
-                          size={18}
-                          color="#10b981"
-                        />
-                      )}
-                    </View>
-                    <View className="flex-1">
-                      <View className="flex-row items-center justify-between">
-                        <Text
-                          className="text-gray-900 font-semibold text-sm flex-1 pr-2"
-                          numberOfLines={1}
-                        >
-                          {rcc.sourceProduct?.name ?? "—"}
-                        </Text>
-                        <Text className="text-gray-400 text-[10px] font-mono">
-                          {rcc.sourceProduct?.productSL}
-                        </Text>
-                      </View>
-                      <View className="flex-row items-center gap-3 mt-1">
-                        <Text className="text-gray-700 text-xs">
-                          Total:{" "}
-                          <Text className="font-bold">{rcc.amount} CC</Text>
-                        </Text>
-                        <Text className="text-amber-600 text-xs">
-                          Used:{" "}
-                          <Text className="font-bold">{rcc.inUse} CC</Text>
-                        </Text>
-                        <Text className="text-emerald-600 text-xs font-bold">
-                          {rcc.amount - rcc.inUse} free
-                        </Text>
-                      </View>
-                      {rcc.isFrozen && (
-                        <View className="flex-row items-center gap-1 mt-1">
-                          <Ionicons
-                            name="snow-outline"
-                            size={11}
-                            color="#60a5fa"
-                          />
-                          <Text className="text-blue-400 text-xs">Frozen</Text>
-                        </View>
-                      )}
-                    </View>
-                  </TouchableOpacity>
-                );
-              })
             )}
-          </View>
+            {data?.bccTransactions.map((tx, i, arr) => {
+              const style = statusStyle[tx.status] ?? statusStyle.PENDING;
+              return (
+                <View
+                  key={tx.id}
+                  className="bg-white border border-gray-100 rounded-2xl p-4 mb-3"
+                >
+                  <View className="flex-row items-center justify-between">
+                    <Text className="text-gray-900 text-sm font-medium">
+                      {formatLabel(tx.transactionType)}
+                    </Text>
+                    <View className={`px-2 py-0.5 rounded-full ${style.bg}`}>
+                      <Text className={`text-[10px] font-medium ${style.text}`}>
+                        {formatLabel(tx.status)}
+                      </Text>
+                    </View>
+                  </View>
+                  <Text className="text-gray-900 font-semibold text-base mt-1">
+                    {tx.amount} BCC
+                  </Text>
+                  <Text className="text-gray-400 text-[11px] mt-1">
+                    {timeAgo(tx.createdAt)}
+                    {tx.paymentGateway ? ` · ${tx.paymentGateway}` : ""}
+                  </Text>
+                  {tx.status === "REJECTED" && tx.rejectReason && (
+                    <Text className="text-red-500 text-[11px] mt-1">
+                      {tx.rejectReason}
+                    </Text>
+                  )}
+                </View>
+              );
+            })}
+          </>
         )}
 
-        {/* Rental History */}
-        {tab === "rentals" && (
-          <View className="gap-2">
-            {rentalHistory.length === 0 ? (
-              <Text className="text-gray-300 text-sm text-center py-8">
-                No rental history yet
+        {/* ─── Rental history ───────────────────────────────────────── */}
+        {tab === "History" && (
+          <>
+            {data?.rentalHistory.length === 0 && (
+              <Text className="text-gray-400 text-sm text-center mt-10">
+                No rental history yet.
               </Text>
-            ) : (
-              rentalHistory.map((r) => {
-                const imgUrl = r.product?.optimizedImages?.[0]
-                  ? `${BACKEND_URL}${r.product.optimizedImages[0]}`
-                  : null;
-                return (
-                  <TouchableOpacity
-                    key={r.id}
-                    onPress={() =>
-                      router.push({
-                        pathname: "/(products)/[id]" as any,
-                        params: { id: r.product.id },
-                      })
-                    }
-                    activeOpacity={0.85}
-                    className="bg-gray-50 border border-gray-100 rounded-2xl p-3 flex-row gap-3"
-                  >
-                    <View className="w-12 h-12 bg-emerald-50 rounded-xl overflow-hidden items-center justify-center">
-                      {imgUrl ? (
-                        <Image
-                          source={{ uri: imgUrl }}
-                          className="w-full h-full"
-                          resizeMode="cover"
-                        />
-                      ) : (
-                        <Ionicons
-                          name="cube-outline"
-                          size={18}
-                          color="#10b981"
-                        />
-                      )}
-                    </View>
-                    <View className="flex-1">
-                      <Text
-                        className="text-gray-900 font-semibold text-sm"
-                        numberOfLines={1}
-                      >
-                        {r.product?.name ?? "—"}
-                      </Text>
-                      <Text className="text-gray-400 text-xs mt-0.5">
-                        {r.status.replace(/_/g, " ")}
-                      </Text>
-                      {r.usedBccAmount != null && (
-                        <Text className="text-gray-700 text-xs mt-0.5">
-                          Used: {r.usedBccAmount} BCC
-                        </Text>
-                      )}
-                      {r.rccUsageDetails?.length > 0 && (
-                        <Text className="text-red-400 text-xs mt-0.5">
-                          RCC:{" "}
-                          {r.rccUsageDetails.reduce(
-                            (s, u) => s + u.usedAmount,
-                            0,
-                          )}{" "}
-                          CC
-                        </Text>
-                      )}
-                    </View>
-                  </TouchableOpacity>
-                );
-              })
             )}
-          </View>
+            {data?.rentalHistory.map((rental) => (
+              <View
+                key={rental.id}
+                className="flex-row items-center gap-3 bg-white border border-gray-100 rounded-2xl p-3 mb-3"
+              >
+                <Image
+                  source={{ uri: rental.product.optimizedImages?.[0] }}
+                  className="w-12 h-12 rounded-xl bg-gray-100"
+                />
+                <View className="flex-1">
+                  <Text className="text-gray-900 text-sm font-medium">
+                    {rental.product.name}
+                  </Text>
+                  <Text className="text-gray-400 text-[11px] mt-0.5">
+                    {formatLabel(rental.status)}
+                    {rental.usedBccAmount
+                      ? ` · ${rental.usedBccAmount} BCC`
+                      : ""}
+                  </Text>
+                </View>
+              </View>
+            ))}
+          </>
         )}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }

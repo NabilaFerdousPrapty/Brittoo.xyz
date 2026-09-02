@@ -182,11 +182,6 @@ export default function AdminDashboardScreen() {
 
       const res = await adminGetAnalytics();
 
-      console.log(
-        "🔥 ADMIN ANALYTICS RESPONSE:",
-        JSON.stringify(res.data, null, 2)
-      );
-
       /*
        Backend response:
 
@@ -207,14 +202,9 @@ export default function AdminDashboardScreen() {
       const analyticsData = res?.data?.data ?? res?.data;
 
       setAnalytics(analyticsData);
-
-      console.log(
-        "✅ ANALYTICS DATA SET:",
-        JSON.stringify(analyticsData, null, 2)
-      );
     } catch (error: any) {
       console.error(
-        "❌ Analytics error:",
+        "Analytics error:",
         error?.response?.data || error
       );
 
@@ -882,6 +872,19 @@ export default function AdminDashboardScreen() {
             onPress={() =>
               router.push(
                 "/(admin)/products"
+              )
+            }
+          />
+
+          {/* CHAT ROOMS */}
+
+          <NavItem
+            label="Chat Rooms"
+            desc="Inspect and delete buyer–seller conversations"
+            icon="chatbubbles-outline"
+            onPress={() =>
+              router.push(
+                "/(admin)/chatroom"
               )
             }
           />

@@ -13,8 +13,6 @@ import {
 } from "react-native";
 import { adminDeleteChatRoom, adminGetAllChatRooms, ChatRoom } from "../../hooks/api";
 
-
-
 function timeAgo(iso?: string) {
   if (!iso) return "";
   const diffMs = Date.now() - new Date(iso).getTime();
@@ -150,8 +148,15 @@ export default function AdminChatRoomsScreen() {
             const messageCount = room._count?.messages ?? 0;
 
             return (
-              <View
+              <TouchableOpacity
                 key={room.id}
+                activeOpacity={0.7}
+                onPress={() =>
+                  router.push({
+                    pathname: "/(admin)/chats/[chatRoomId]",
+                    params: { chatRoomId: room.id },
+                  })
+                }
                 className="bg-white border border-gray-100 rounded-2xl p-4 mb-3"
                 style={{ elevation: 1 }}
               >
@@ -196,18 +201,24 @@ export default function AdminChatRoomsScreen() {
                   <Text className="text-gray-400 text-[11px]">
                     Started {timeAgo(room.createdAt)}
                   </Text>
-                  <TouchableOpacity
-                    onPress={() => handleDelete(room)}
-                    disabled={deletingId === room.id}
-                    className="flex-row items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-50"
-                  >
-                    <Ionicons name="trash-outline" size={13} color="#dc2626" />
-                    <Text className="text-red-600 text-xs font-medium">
-                      {deletingId === room.id ? "Deleting..." : "Delete"}
-                    </Text>
-                  </TouchableOpacity>
+                  <View className="flex-row items-center gap-3">
+                    <TouchableOpacity
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        handleDelete(room);
+                      }}
+                      disabled={deletingId === room.id}
+                      className="flex-row items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-50"
+                    >
+                      <Ionicons name="trash-outline" size={13} color="#dc2626" />
+                      <Text className="text-red-600 text-xs font-medium">
+                        {deletingId === room.id ? "Deleting..." : "Delete"}
+                      </Text>
+                    </TouchableOpacity>
+                    <Ionicons name="chevron-forward" size={16} color="#d1d5db" />
+                  </View>
                 </View>
-              </View>
+              </TouchableOpacity>
             );
           })
         )}
