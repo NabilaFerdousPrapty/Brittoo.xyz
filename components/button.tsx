@@ -1,10 +1,10 @@
 import React from "react";
 import {
-  TouchableOpacity,
-  Text,
   ActivityIndicator,
-  View,
+  Text,
+  TouchableOpacity,
   TouchableOpacityProps,
+  View,
 } from "react-native";
 
 interface ButtonProps extends TouchableOpacityProps {
@@ -17,12 +17,12 @@ interface ButtonProps extends TouchableOpacityProps {
 
 const variantStyles = {
   primary: {
-    container: "bg-gray-900",
+    container: "bg-[#16A34A]",
     text: "text-white font-semibold",
     indicator: "#ffffff",
   },
   secondary: {
-    container: "bg-gray-100 border border-gray-200",
+    container: "bg-gray-100 border border-[#16A34A]",
     text: "text-gray-900 font-medium",
     indicator: "#111827",
   },

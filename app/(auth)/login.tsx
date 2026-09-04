@@ -1,15 +1,18 @@
+
 import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
-  Alert,
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
+    Alert,
+    Animated,
+    Easing,
+    Image,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { Button } from "../../components/button";
 import { Input } from "../../components/input";
@@ -22,34 +25,115 @@ export default function LoginScreen() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
 
+  // ----------------------------------------------------------
+  // Animations
+  // ----------------------------------------------------------
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(24)).current;
+  const logoScale = useRef(new Animated.Value(0.9)).current;
+  const buttonScale = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 650,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 650,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+
+      Animated.spring(logoScale, {
+        toValue: 1,
+        friction: 7,
+        tension: 60,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  const pressIn = () => {
+    Animated.spring(buttonScale, {
+      toValue: 0.97,
+      friction: 6,
+      tension: 120,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const pressOut = () => {
+    Animated.spring(buttonScale, {
+      toValue: 1,
+      friction: 6,
+      tension: 120,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  // ----------------------------------------------------------
+  // Validation
+  // ----------------------------------------------------------
+
   const validate = () => {
     const e: Record<string, string> = {};
-    if (!email.trim()) e.email = "Email is required";
-    if (!password) e.password = "Password is required";
+
+    if (!email.trim()) {
+      e.email = "Email is required";
+    }
+
+    if (!password) {
+      e.password = "Password is required";
+    }
+
     setErrors(e);
+
     return Object.keys(e).length === 0;
   };
 
+  // ----------------------------------------------------------
+  // Login
+  // ----------------------------------------------------------
+
   const handleLogin = async () => {
     if (!validate()) return;
+
     setLoading(true);
+
     try {
-      const res = await loginUser(email.trim().toLowerCase(), password);
+      const res = await loginUser(
+        email.trim().toLowerCase(),
+        password,
+      );
+
       if (res.data.success) {
-        // Store token and user
-        await SecureStore.setItemAsync(STORAGE_KEYS.TOKEN, res.data.token);
+        // Store token
+        await SecureStore.setItemAsync(
+          STORAGE_KEYS.TOKEN,
+          res.data.token,
+        );
+
+        // Store user
         await SecureStore.setItemAsync(
           STORAGE_KEYS.USER,
           JSON.stringify(res.data.user),
         );
+
         // Navigate to main app
         router.replace("/dashboard");
       } else {
-        // In case success is false (shouldn't happen with proper backend)
-        Alert.alert("Login failed", res.data.message || "Unknown error");
+        Alert.alert(
+          "Login failed",
+          res.data.message || "Unknown error",
+        );
       }
     } catch (err: any) {
-      // Enhanced error logging – remove after debugging
       console.log("Login error details:", {
         message: err.message,
         response: err.response?.data,
@@ -57,13 +141,19 @@ export default function LoginScreen() {
       });
 
       const status = err?.response?.status;
-      const msg = err?.response?.data?.message || "Login failed";
+      const msg =
+        err?.response?.data?.message || "Login failed";
 
       if (status === 429) {
         Alert.alert("Too many attempts", msg);
       } else if (status === 401) {
-        setErrors({ password: "Incorrect email or password" });
-      } else if (status === undefined || err.message === "Network Error") {
+        setErrors({
+          password: "Incorrect email or password",
+        });
+      } else if (
+        status === undefined ||
+        err.message === "Network Error"
+      ) {
         Alert.alert(
           "Connection Error",
           "Cannot reach the server. Make sure the backend is running and the base URL is correct.",
@@ -76,35 +166,85 @@ export default function LoginScreen() {
     }
   };
 
+  // ----------------------------------------------------------
+  // UI
+  // ----------------------------------------------------------
+
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-gray-50"
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      className="flex-1 bg-[#F7FBF8]"
+      behavior={
+        Platform.OS === "ios" ? "padding" : "height"
+      }
     >
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ flexGrow: 1 }}
+        contentContainerStyle={{
+          flexGrow: 1,
+        }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View className="flex-1 justify-center px-4 py-10">
-          {/* Main Card */}
-          <View className="bg-white rounded-3xl shadow-xl px-6 py-8 border border-gray-100">
-            {/* Brittoo Logo */}
-            <View className="items-center mb-6">
-              <Image
-                source={require("../../assets/images/brittoo-logo.png")}
-                style={{ width: 180, height: 70 }}
-                resizeMode="contain"
-              />
-            </View>
+        <Animated.View
+          style={{
+            flex: 1,
+            opacity: fadeAnim,
+            transform: [
+              {
+                translateY: slideAnim,
+              },
+            ],
+          }}
+          className="justify-center px-5 py-10"
+        >
+          {/* ------------------------------------------------ */}
+          {/* Top Green Accent */}
+          {/* ------------------------------------------------ */}
 
-            <Text className="text-gray-800 text-2xl font-bold text-center mb-1">
+          <View className="absolute top-0 left-0 right-0 h-1 bg-[#16A34A]" />
+
+          {/* ------------------------------------------------ */}
+          {/* Main Card */}
+          {/* ------------------------------------------------ */}
+
+          <View className="bg-white rounded-[28px] px-6 py-8 border border-[#DCEFE2]">
+            {/* Logo */}
+
+            <Animated.View
+              style={{
+                transform: [
+                  {
+                    scale: logoScale,
+                  },
+                ],
+              }}
+              className="items-center mb-5"
+            >
+              <View className="items-center justify-center rounded-2xl bg-[#F0FDF4] px-5 py-2">
+                <Image
+                  source={require("../../assets/images/brittoo-logo.png")}
+                  style={{
+                    width: 175,
+                    height: 68,
+                  }}
+                  resizeMode="contain"
+                />
+              </View>
+            </Animated.View>
+
+            {/* Heading */}
+
+            <Text className="text-[#16301F] text-[27px] font-bold text-center">
               Welcome back
             </Text>
-            <Text className="text-gray-500 text-sm text-center mb-8">
+
+            <Text className="text-[#64806C] text-sm text-center mt-1 mb-7">
               Sign in to continue to Brittoo
             </Text>
+
+            {/* ------------------------------------------------ */}
+            {/* Email */}
+            {/* ------------------------------------------------ */}
 
             <Input
               label="University email"
@@ -117,20 +257,30 @@ export default function LoginScreen() {
               autoComplete="email"
             />
 
-            {/* Password field with forgot link */}
-            <View>
+            {/* ------------------------------------------------ */}
+            {/* Password */}
+            {/* ------------------------------------------------ */}
+
+            <View className="mt-1">
               <View className="flex-row items-center justify-between mb-1.5">
-                <Text className="text-gray-500 text-xs font-medium ml-0.5">
+                <Text className="text-[#64806C] text-xs font-semibold ml-0.5">
                   Password
                 </Text>
+
                 <TouchableOpacity
-                  onPress={() => router.push("/(auth)/forgot-password")}
+                  activeOpacity={0.7}
+                  onPress={() =>
+                    router.push(
+                      "/(auth)/forgot-password",
+                    )
+                  }
                 >
-                  <Text className="text-gray-900 text-xs font-semibold">
-                    Forgot?
+                  <Text className="text-[#166534] text-xs font-bold">
+                    Forgot password?
                   </Text>
                 </TouchableOpacity>
               </View>
+
               <Input
                 placeholder="Your password"
                 leftIcon="lock-closed-outline"
@@ -141,43 +291,101 @@ export default function LoginScreen() {
               />
             </View>
 
-            <Button
-              label="Sign in"
-              onPress={handleLogin}
-              loading={loading}
-              size="lg"
-              className="mt-2 mb-6"
-            />
+            {/* ------------------------------------------------ */}
+            {/* Sign In Button */}
+            {/* ------------------------------------------------ */}
 
+            <Animated.View
+              style={{
+                transform: [
+                  {
+                    scale: buttonScale,
+                  },
+                ],
+              }}
+              className="mt-3"
+            >
+              <TouchableOpacity
+                activeOpacity={0.9}
+                onPress={handleLogin}
+                onPressIn={pressIn}
+                onPressOut={pressOut}
+                disabled={loading}
+              >
+                <Button
+                  label="Sign in"
+                  onPress={handleLogin}
+                  loading={loading}
+                  size="lg"
+                  className="mb-5 "
+                />
+              </TouchableOpacity>
+            </Animated.View>
+
+            {/* ------------------------------------------------ */}
             {/* Divider */}
-            <View className="flex-row items-center gap-3 mb-6">
-              <View className="flex-1 h-px bg-gray-100" />
-              <Text className="text-gray-400 text-xs font-medium">or</Text>
-              <View className="flex-1 h-px bg-gray-100" />
+            {/* ------------------------------------------------ */}
+
+            <View className="flex-row items-center gap-3 mb-5">
+              <View className="flex-1 h-[1px] bg-[#E1EEE5]" />
+
+              <View className="px-3 py-1 rounded-full bg-[#F0FDF4]">
+                <Text className="text-[#6B8A74] text-[10px] font-bold tracking-wide">
+                  SECURE
+                </Text>
+              </View>
+
+              <View className="flex-1 h-[1px] bg-[#E1EEE5]" />
             </View>
 
-            {/* Rate limit info card */}
-            <View className="flex-row items-start gap-2 bg-blue-50/30 border border-blue-100 rounded-xl p-3">
-              <Text className="text-base mt-0.5">🔒</Text>
-              <Text className="text-gray-500 text-xs flex-1 leading-5">
-                For security, sign-in is paused after 5 failed attempts within
-                15 minutes.
+            {/* ------------------------------------------------ */}
+            {/* Security Info */}
+            {/* ------------------------------------------------ */}
+
+            <View className="flex-row items-center bg-[#F0FDF4] border border-[#DCFCE7] rounded-2xl p-3.5">
+              <View className="w-9 h-9 rounded-full bg-white items-center justify-center mr-3">
+                <Text className="text-base">
+                  🔒
+                </Text>
+              </View>
+
+              <Text className="text-[#64806C] text-xs flex-1 leading-5">
+                For security, sign-in is paused after
+                5 failed attempts within 15 minutes.
               </Text>
             </View>
           </View>
 
-          {/* Footer */}
-          <View className="flex-row justify-center items-center gap-1 mt-6">
-            <Text className="text-gray-500 text-sm">
+          {/* ------------------------------------------------ */}
+          {/* Sign Up */}
+          {/* ------------------------------------------------ */}
+
+          <View className="flex-row justify-center items-center mt-6">
+            <Text className="text-[#64806C] text-sm">
               Don't have an account?
             </Text>
-            <TouchableOpacity onPress={() => router.push("/(auth)/signup")}>
-              <Text className="text-gray-900 text-sm font-semibold">
+
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() =>
+                router.push("/(auth)/signup")
+              }
+              className="ml-1.5 px-1"
+            >
+              <Text className="text-[#166534] text-sm font-bold">
                 Sign up
               </Text>
             </TouchableOpacity>
           </View>
-        </View>
+
+          {/* ------------------------------------------------ */}
+          {/* Brittoo Tagline */}
+          {/* ------------------------------------------------ */}
+
+          <Text className="text-[#8AA394] text-[10px] text-center mt-7 tracking-[1.5px]">
+            OWN LESS • ACCESS MORE
+          </Text>
+        </Animated.View>
       </ScrollView>
     </KeyboardAvoidingView>
   );

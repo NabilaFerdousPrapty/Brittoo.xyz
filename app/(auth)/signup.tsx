@@ -1,8 +1,11 @@
+
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
+  Animated,
+  Easing,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -25,92 +28,248 @@ export default function RegisterScreen() {
     password: "",
     confirm: "",
   });
+
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [showHint, setShowHint] = useState(false);
 
+  // ----------------------------------------------------------
+  // Animations
+  // ----------------------------------------------------------
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(25)).current;
+  const logoScale = useRef(new Animated.Value(0.9)).current;
+  const buttonScale = useRef(new Animated.Value(1)).current;
+  const hintHeight = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 650,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 650,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+
+      Animated.spring(logoScale, {
+        toValue: 1,
+        friction: 7,
+        tension: 60,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  useEffect(() => {
+    Animated.timing(hintHeight, {
+      toValue: showHint ? 1 : 0,
+      duration: 220,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: true,
+    }).start();
+  }, [showHint]);
+
+  const pressIn = () => {
+    Animated.spring(buttonScale, {
+      toValue: 0.97,
+      friction: 6,
+      tension: 120,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const pressOut = () => {
+    Animated.spring(buttonScale, {
+      toValue: 1,
+      friction: 6,
+      tension: 120,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  // ----------------------------------------------------------
+  // Form helper
+  // ----------------------------------------------------------
+
   const set = (field: string) => (val: string) =>
-    setForm((f) => ({ ...f, [field]: val }));
+    setForm((f) => ({
+      ...f,
+      [field]: val,
+    }));
+
+  // ----------------------------------------------------------
+  // Validation
+  // ----------------------------------------------------------
 
   const validate = () => {
     const e: Record<string, string> = {};
-    if (!form.name.trim()) e.name = "Name is required";
-    if (!form.email.trim()) e.email = "Email is required";
-    // Add RUET email format validation
+
+    if (!form.name.trim()) {
+      e.name = "Name is required";
+    }
+
+    if (!form.email.trim()) {
+      e.email = "Email is required";
+    }
+
+    // RUET email format validation
     const emailRegex = /^\d+@student\.ruet\.ac\.bd$/;
 
-    if (!form.password) e.password = "Password is required";
-    if (form.password.length < 6) e.password = "Minimum 6 characters";
-    if (form.password !== form.confirm) e.confirm = "Passwords don't match";
+    if (form.email.trim() && !emailRegex.test(form.email.trim())) {
+      e.email = "Use your RUET student email";
+    }
+
+    if (!form.password) {
+      e.password = "Password is required";
+    }
+
+    if (form.password.length < 6) {
+      e.password = "Minimum 6 characters";
+    }
+
+    if (form.password !== form.confirm) {
+      e.confirm = "Passwords don't match";
+    }
+
     setErrors(e);
+
     return Object.keys(e).length === 0;
   };
 
+  // ----------------------------------------------------------
+  // Register
+  // ----------------------------------------------------------
+
   const handleRegister = async () => {
     if (!validate()) return;
+
     setLoading(true);
+
     try {
       const res = await registerUser({
         name: form.name.trim(),
         email: form.email.trim().toLowerCase(),
         password: form.password,
       });
+
       if (res.data.success) {
         router.push({
           pathname: "/(auth)/verify-otp",
-          params: { email: form.email.trim().toLowerCase() },
+          params: {
+            email: form.email.trim().toLowerCase(),
+          },
         });
       }
     } catch (err: any) {
-      let errorMessage = "Registration failed. Please try again.";
+      let errorMessage =
+        "Registration failed. Please try again.";
 
-      // 🔍 Show the real backend message
       if (err?.response?.data?.message) {
         errorMessage = err.response.data.message;
-      }
-      // Network errors (Docker unreachable)
-      else if (err.message === "Network Error") {
-        errorMessage = `Cannot connect to backend.\n\nMake sure:\n• Docker container is running (docker ps)\n• Port 5000 is mapped (-p 5000:5000)\n• Android emulator uses 10.0.2.2`;
+      } else if (err.message === "Network Error") {
+        errorMessage =
+          `Cannot connect to backend.\n\nMake sure:\n• Docker container is running (docker ps)\n• Port 5000 is mapped (-p 5000:5000)\n• Android emulator uses 10.0.2.2`;
       } else if (err.code === "ECONNREFUSED") {
-        errorMessage = "Connection refused. Is the backend running?";
+        errorMessage =
+          "Connection refused. Is the backend running?";
       }
 
-      Alert.alert("Registration Error", errorMessage);
+      Alert.alert(
+        "Registration Error",
+        errorMessage,
+      );
     } finally {
       setLoading(false);
     }
   };
 
+  // ----------------------------------------------------------
+  // UI
+  // ----------------------------------------------------------
+
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-gray-50"
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      className="flex-1 bg-[#F7FBF8]"
+      behavior={
+        Platform.OS === "ios"
+          ? "padding"
+          : "height"
+      }
     >
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ flexGrow: 1 }}
+        contentContainerStyle={{
+          flexGrow: 1,
+        }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View className="flex-1 justify-center px-4 py-10">
-          <View className="bg-white rounded-3xl shadow-xl px-6 py-8 border border-gray-100">
-            {/* Brittoo Logo */}
-            <View className="items-center mb-6">
-              <Image
-                source={require("../../assets/images/brittoo-logo.png")}
-                style={{ width: 160, height: 60 }}
-                resizeMode="contain"
-              />
-            </View>
+        <Animated.View
+          style={{
+            flex: 1,
+            opacity: fadeAnim,
+            transform: [
+              {
+                translateY: slideAnim,
+              },
+            ],
+          }}
+          className="justify-center px-5 py-10"
+        >
+          {/* Top green accent */}
+          <View className="absolute top-0 left-0 right-0 h-1 bg-[#16A34A]" />
 
-            <Text className="text-gray-800 text-2xl font-bold text-center mb-1">
+          {/* ------------------------------------------------ */}
+          {/* Main Card */}
+          {/* ------------------------------------------------ */}
+
+          <View className="bg-white rounded-[28px] px-6 py-8 border border-[#DCEFE2]">
+            {/* Logo */}
+
+            <Animated.View
+              style={{
+                transform: [
+                  {
+                    scale: logoScale,
+                  },
+                ],
+              }}
+              className="items-center mb-5"
+            >
+              <View className="items-center justify-center rounded-2xl bg-[#F0FDF4] px-5 py-2">
+                <Image
+                  source={require("../../assets/images/brittoo-logo.png")}
+                  style={{
+                    width: 165,
+                    height: 62,
+                  }}
+                  resizeMode="contain"
+                />
+              </View>
+            </Animated.View>
+
+            {/* Heading */}
+
+            <Text className="text-[#16301F] text-[27px] font-bold text-center">
               Create account
             </Text>
-            <Text className="text-gray-500 text-sm text-center mb-8">
+
+            <Text className="text-[#64806C] text-sm text-center mt-1 mb-7">
               Join your university network
             </Text>
 
+            {/* ------------------------------------------------ */}
             {/* Name */}
+            {/* ------------------------------------------------ */}
+
             <Input
               label="Full name"
               placeholder="Your full name"
@@ -121,33 +280,68 @@ export default function RegisterScreen() {
               autoComplete="name"
             />
 
-            {/* Email with hint */}
+            {/* ------------------------------------------------ */}
+            {/* Email */}
+            {/* ------------------------------------------------ */}
+
             <View>
               <View className="flex-row items-center justify-between mb-1.5">
-                <Text className="text-gray-500 text-xs font-medium ml-0.5">
+                <Text className="text-[#64806C] text-xs font-semibold ml-0.5">
                   University email
                 </Text>
+
                 <TouchableOpacity
-                  onPress={() => setShowHint((h) => !h)}
+                  activeOpacity={0.7}
+                  onPress={() =>
+                    setShowHint((h) => !h)
+                  }
                   className="flex-row items-center gap-1"
                 >
                   <Ionicons
                     name="information-circle-outline"
-                    size={13}
-                    color="#9ca3af"
+                    size={14}
+                    color="#6B8A74"
                   />
-                  <Text className="text-gray-400 text-xs">
+
+                  <Text className="text-[#64806C] text-xs font-medium">
                     Supported formats
                   </Text>
                 </TouchableOpacity>
               </View>
 
+              {/* Animated Hint */}
+
               {showHint && (
-                <View className="bg-gray-50 border border-gray-100 rounded-xl p-3 mb-2">
-                  <Text className="text-gray-500 text-xs leading-5">
-                    {UNIVERSITY_HINT}
-                  </Text>
-                </View>
+                <Animated.View
+                  style={{
+                    opacity: hintHeight,
+                    transform: [
+                      {
+                        translateY: hintHeight.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [-5, 0],
+                        }),
+                      },
+                    ],
+                  }}
+                  className="bg-[#F0FDF4] border border-[#DCFCE7] rounded-xl p-3 mb-2"
+                >
+                  <View className="flex-row items-start">
+                    <Ionicons
+                      name="school-outline"
+                      size={16}
+                      color="#16A34A"
+                      style={{
+                        marginTop: 1,
+                        marginRight: 8,
+                      }}
+                    />
+
+                    <Text className="text-[#64806C] text-xs leading-5 flex-1">
+                      {UNIVERSITY_HINT}
+                    </Text>
+                  </View>
+                </Animated.View>
               )}
 
               <Input
@@ -161,6 +355,10 @@ export default function RegisterScreen() {
               />
             </View>
 
+            {/* ------------------------------------------------ */}
+            {/* Password */}
+            {/* ------------------------------------------------ */}
+
             <Input
               label="Password"
               placeholder="Min. 6 characters"
@@ -170,6 +368,10 @@ export default function RegisterScreen() {
               onChangeText={set("password")}
               error={errors.password}
             />
+
+            {/* ------------------------------------------------ */}
+            {/* Confirm Password */}
+            {/* ------------------------------------------------ */}
 
             <Input
               label="Confirm password"
@@ -181,34 +383,68 @@ export default function RegisterScreen() {
               error={errors.confirm}
             />
 
-            {/* University note - updated to only RUET */}
-            {/* <View className="flex-row items-start gap-2 bg-blue-50/30 border border-blue-100 rounded-xl p-3 mb-6">
-              <Ionicons name="school-outline" size={14} color="#6b7280" />
-              <Text className="text-gray-500 text-xs flex-1 leading-5">
-                Only RUET emails (@student.ruet.ac.bd) are accepted
-              </Text>
-            </View> */}
+            {/* ------------------------------------------------ */}
+            {/* Create Account Button */}
+            {/* ------------------------------------------------ */}
 
-            <Button
-              label="Create account"
-              onPress={handleRegister}
-              loading={loading}
-              size="lg"
-              className="mb-4"
-            />
+            <Animated.View
+              style={{
+                transform: [
+                  {
+                    scale: buttonScale,
+                  },
+                ],
+              }}
+              className="mt-2"
+            >
+              <TouchableOpacity
+                activeOpacity={0.9}
+                onPress={handleRegister}
+                onPressIn={pressIn}
+                onPressOut={pressOut}
+                disabled={loading}
+              >
+                <Button
+                  label="Create account"
+                  onPress={handleRegister}
+                  loading={loading}
+                  size="lg"
+                  className="mb-4"
+                />
+              </TouchableOpacity>
+            </Animated.View>
 
-            <View className="flex-row justify-center items-center gap-1">
-              <Text className="text-gray-500 text-sm">
+            {/* ------------------------------------------------ */}
+            {/* Sign In */}
+            {/* ------------------------------------------------ */}
+
+            <View className="flex-row justify-center items-center mt-1">
+              <Text className="text-[#64806C] text-sm">
                 Already have an account?
               </Text>
-              <TouchableOpacity onPress={() => router.push("/(auth)/login")}>
-                <Text className="text-gray-900 text-sm font-semibold">
+
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() =>
+                  router.push("/(auth)/login")
+                }
+                className="ml-1.5 px-1"
+              >
+                <Text className="text-[#166534] text-sm font-bold">
                   Sign in
                 </Text>
               </TouchableOpacity>
             </View>
           </View>
-        </View>
+
+          {/* ------------------------------------------------ */}
+          {/* Bottom Branding */}
+          {/* ------------------------------------------------ */}
+
+          <Text className="text-[#8AA394] text-[10px] text-center mt-7 tracking-[1.5px]">
+            OWN LESS • ACCESS MORE
+          </Text>
+        </Animated.View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
