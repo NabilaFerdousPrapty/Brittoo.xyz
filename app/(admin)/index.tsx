@@ -889,6 +889,43 @@ export default function AdminDashboardScreen() {
             }
           />
 
+          {/* BCC REQUESTS */}
+
+          <NavItem
+            label="BCC Requests"
+            desc="Approve or reject pending Blue Credit purchases"
+            icon="wallet-outline"
+            onPress={() =>
+              router.push(
+                "/(admin)/bcc-requests"
+              )
+            }
+          />
+
+          {/* NOTIFICATIONS */}
+
+          <NavItem
+            label="Send Notification"
+            desc="Push a message to all users or a specific list"
+            icon="megaphone-outline"
+            onPress={() =>
+              router.push(
+                "/(admin)/send-notification"
+              )
+            }
+          />
+
+          <NavItem
+            label="Notification History"
+            desc="See what's been sent so far"
+            icon="time-outline"
+            onPress={() =>
+              router.push(
+                "/(admin)/sent-notifications"
+              )
+            }
+          />
+
           {/* ==========================================
               BACK TO MAIN APP
           ========================================== */}

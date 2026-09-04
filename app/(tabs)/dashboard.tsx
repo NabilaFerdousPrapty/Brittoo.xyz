@@ -178,12 +178,20 @@ export default function DashboardScreen() {
               Brittoo
             </Text>
           </View>
-          <TouchableOpacity
-            onPress={handleLogout}
-            className="bg-white/20 px-3 py-2 rounded-lg"
-          >
-            <Ionicons name="log-out-outline" size={18} color="white" />
-          </TouchableOpacity>
+          <View className="flex-row items-center gap-2">
+            <TouchableOpacity
+              onPress={() => router.push("/notifications")}
+              className="bg-white/20 px-3 py-2 rounded-lg"
+            >
+              <Ionicons name="notifications-outline" size={18} color="white" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleLogout}
+              className="bg-white/20 px-3 py-2 rounded-lg"
+            >
+              <Ionicons name="log-out-outline" size={18} color="white" />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* User profile section */}
@@ -306,6 +314,15 @@ export default function DashboardScreen() {
         >
          <Entypo name="message" size={24} color="black" />
         </TouchableOpacity> */}
+
+        <TouchableOpacity
+          onPress={() => router.push("/wallet")}
+          className="flex-row items-center gap-2 bg-blue-50 border border-blue-100 rounded-xl px-3 py-2 self-start mt-3 mb-1"
+        >
+          <Ionicons name="wallet-outline" size={16} color="#2563eb" />
+          <Text className="text-blue-700 text-xs font-semibold">Wallet</Text>
+        </TouchableOpacity>
+
         {/* Verification status */}
         <View className={`${v.bg} border ${v.border} rounded-2xl p-4 mb-4`}>
           <View className="flex-row items-center justify-between">

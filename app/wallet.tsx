@@ -1,4 +1,3 @@
-
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -11,6 +10,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Button } from "../components/button";
 import {
   getUserCreditHistoryDash,
   type UserCreditHistoryDashResponse,
@@ -145,6 +145,13 @@ export default function WalletScreen() {
         {/* ─── Overview ─────────────────────────────────────────────── */}
         {tab === "Overview" && (
           <>
+            <Button
+              label="Buy BCC"
+              onPress={() => router.push("/buy-bcc")}
+              size="lg"
+              className="mb-4"
+            />
+
             <View className="flex-row flex-wrap gap-3 mb-4">
               {[
                 {
